@@ -1,0 +1,35 @@
+name: Validate Capability Matrix
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate-matrix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate JSON syntax
+        run: |
+          python -m json.tool docs/specifications/drafts/capability-matrix/capability-matrix.schema.json > /dev/null
+          python -m json.tool docs/specifications/drafts/capability-matrix/capability-matrix.v0.json > /dev/null
+
+      - name: Validate capability matrix contract
+        run: |
+          ./tools/validate_capability_matrix.py \
+            --matrix docs/specifications/drafts/capability-matrix/capability-matrix.v0.json
+
+      - name: Run unit tests
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest discover -s tests -p "test_*.py"

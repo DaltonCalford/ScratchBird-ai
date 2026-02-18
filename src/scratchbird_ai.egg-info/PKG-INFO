@@ -1,0 +1,29 @@
+Metadata-Version: 2.4
+Name: scratchbird-ai
+Version: 0.1.0
+Summary: AI integration platform scaffolding for ScratchBird
+Author: ScratchBird AI Team
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Provides-Extra: mcp
+Requires-Dist: mcp>=1.0.0; extra == "mcp"
+
+# ScratchBird-ai
+
+AI integration project for ScratchBird.
+
+## Repository Layout
+
+- `docs/reference/` - research inputs and external/tooling references
+- `docs/specifications/` - implementation specifications derived from reference material
+- `src/` - implementation code (tool servers, adapters, orchestration)
+- `tests/` - automated tests and evaluation harnesses
+- `examples/` - runnable integration examples
+- `tools/` - local developer scripts
+
+## Documentation Workflow
+
+1. Capture and curate inputs in `docs/reference/`.
+2. Produce concrete implementation specs in `docs/specifications/drafts/`.
+3. Promote approved specs to `docs/specifications/final/`.
+4. Implement in `src/` and validate in `tests/`.

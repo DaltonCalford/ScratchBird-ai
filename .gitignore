@@ -1,0 +1,46 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.venv*/
+venv/
+.env
+.env.*
+
+# Node/JS
+node_modules/
+.npm/
+.pnpm-store/
+
+# Build/Test
+build/
+dist/
+out/
+coverage/
+htmlcov/
+*.log
+
+# Runtime artifacts
+*.pid
+*.sock
+*.tmp
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
