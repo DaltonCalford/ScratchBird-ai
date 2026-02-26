@@ -18,6 +18,33 @@ from uuid import UUID
 
 DEFAULT_DIALECTS = ("native",)
 DEFAULT_REQUEST_MAX_BYTES = 2 * 1024 * 1024
+_DEFAULT_SERVER_SETUP = "listener-only"
+
+_SERVER_SETUP_ALIASES = {
+    "listener-only": "listener-only",
+    "listener_only": "listener-only",
+    "listener": "listener-only",
+    "inet_listener": "listener-only",
+    "inet": "listener-only",
+    "tcp": "listener-only",
+    "tcp_listener": "listener-only",
+    "network": "listener-only",
+    "managed": "managed",
+    "manager": "managed",
+    "manager_proxy": "managed",
+    "manager-proxy": "managed",
+    "mcp": "managed",
+    "ipc-only": "ipc-only",
+    "ipc_only": "ipc-only",
+    "ipc": "ipc-only",
+    "local_ipc": "ipc-only",
+    "local-ipc": "ipc-only",
+    "local": "ipc-only",
+    "embedded": "embedded",
+    "inproc": "embedded",
+    "in-process": "embedded",
+    "in_process": "embedded",
+}
 
 
 def _parse_csv(raw: str) -> tuple[str, ...]:
@@ -30,6 +57,45 @@ def _env_int(name: str, default: int) -> int:
         return int(value)
     except ValueError:
         return default
+
+
+def _parse_bool(raw: str | None, default: bool) -> bool:
+    if raw is None:
+        return default
+    lowered = raw.strip().lower()
+    if lowered in {"1", "true", "yes", "on"}:
+        return True
+    if lowered in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
+def _first_nonempty_env(*names: str) -> str:
+    for name in names:
+        value = os.getenv(name)
+        if value is not None:
+            stripped = value.strip()
+            if stripped:
+                return stripped
+    return ""
+
+
+def _normalize_server_setup(raw: str) -> str:
+    normalized = raw.strip().lower()
+    if not normalized:
+        return _DEFAULT_SERVER_SETUP
+    return _SERVER_SETUP_ALIASES.get(normalized, _DEFAULT_SERVER_SETUP)
+
+
+def _has_manager_token_in_dsn(dsn: str) -> bool:
+    lowered = dsn.strip().lower()
+    if not lowered:
+        return False
+    return (
+        "manager_auth_token=" in lowered
+        or "mcp_auth_token=" in lowered
+        or "managerauthtoken=" in lowered
+    )
 
 
 def _sql_literal(value: str) -> str:
@@ -155,6 +221,32 @@ class BridgeSettings:
     enabled_dialects: tuple[str, ...] = DEFAULT_DIALECTS
     dialect_dsns: dict[str, str] = field(default_factory=dict)
     python_driver_src: str = ""
+    server_setup: str = _DEFAULT_SERVER_SETUP
+    transport_mode: str = ""
+    front_door_mode: str = ""
+    ipc_method: str = ""
+    ipc_path: str = ""
+    manager_auth_token: str | None = None
+    manager_username: str | None = None
+    manager_database: str | None = None
+    manager_connection_profile: str = "native_v3"
+    manager_client_intent: str = "native_v3"
+    manager_client_flags: int = 0
+    manager_auth_fast_path: bool = True
+    auth_method_id: str = ""
+    auth_method_payload: str = ""
+    auth_payload_json: str = ""
+    auth_payload_b64: str = ""
+    auth_provider_profile: str = ""
+    auth_required_methods: tuple[str, ...] = ()
+    auth_forbidden_methods: tuple[str, ...] = ()
+    auth_require_channel_binding: bool = False
+    workload_identity_token: str | None = None
+    proxy_principal_assertion: str | None = None
+    ldap_bind_dn: str | None = None
+    kerberos_spn: str | None = None
+    radius_username: str | None = None
+    pam_service: str | None = None
 
     @classmethod
     def from_env(cls) -> BridgeSettings:
@@ -183,6 +275,53 @@ class BridgeSettings:
         strict_raw = os.getenv("SCRATCHBIRD_AI_BRIDGE_STRICT_COMPILE", "0").strip().lower()
         strict_compile = strict_raw in {"1", "true", "yes", "on"}
 
+        manager_flags = 0
+        manager_flags_raw = _first_nonempty_env(
+            "SCRATCHBIRD_AI_BRIDGE_MANAGER_CLIENT_FLAGS",
+            "SCRATCHBIRD_AI_BRIDGE_MCP_CLIENT_FLAGS",
+        )
+        if manager_flags_raw:
+            try:
+                manager_flags = int(manager_flags_raw)
+            except ValueError:
+                manager_flags = 0
+            manager_flags = max(0, min(65535, manager_flags))
+
+        manager_auth_fast_path = True
+        if "SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_FAST_PATH" in os.environ:
+            manager_auth_fast_path = _parse_bool(
+                os.getenv("SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_FAST_PATH"),
+                True,
+            )
+        elif "SCRATCHBIRD_AI_BRIDGE_MCP_AUTH_FAST_PATH" in os.environ:
+            manager_auth_fast_path = _parse_bool(
+                os.getenv("SCRATCHBIRD_AI_BRIDGE_MCP_AUTH_FAST_PATH"),
+                True,
+            )
+
+        server_setup_raw = _first_nonempty_env(
+            "SCRATCHBIRD_AI_BRIDGE_SERVER_SETUP",
+            "SCRATCHBIRD_AI_BRIDGE_CONNECTION_SETUP",
+            "SCRATCHBIRD_AI_BRIDGE_SERVER_MODE",
+        )
+        server_setup = _normalize_server_setup(server_setup_raw)
+        auth_required_methods = _parse_csv(
+            _first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_REQUIRED_METHODS",
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_REQUIRED",
+            )
+        )
+        auth_forbidden_methods = _parse_csv(
+            _first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_FORBIDDEN_METHODS",
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_FORBIDDEN",
+            )
+        )
+        auth_require_channel_binding = _parse_bool(
+            os.getenv("SCRATCHBIRD_AI_BRIDGE_AUTH_REQUIRE_CHANNEL_BINDING"),
+            False,
+        )
+
         return cls(
             host=os.getenv("SCRATCHBIRD_AI_BRIDGE_HOST", "127.0.0.1").strip(),
             port=_env_int("SCRATCHBIRD_AI_BRIDGE_PORT", 3095),
@@ -196,6 +335,112 @@ class BridgeSettings:
             enabled_dialects=enabled,
             dialect_dsns=dialect_dsns,
             python_driver_src=os.getenv("SCRATCHBIRD_AI_BRIDGE_PYTHON_DRIVER_SRC", "").strip(),
+            server_setup=server_setup,
+            transport_mode=os.getenv("SCRATCHBIRD_AI_BRIDGE_TRANSPORT_MODE", "").strip(),
+            front_door_mode=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_FRONT_DOOR_MODE",
+                "SCRATCHBIRD_AI_BRIDGE_FRONTDOORMODE",
+                "SCRATCHBIRD_AI_BRIDGE_CONNECTION_MODE",
+                "SCRATCHBIRD_AI_BRIDGE_INGRESS_MODE",
+            ),
+            ipc_method=os.getenv("SCRATCHBIRD_AI_BRIDGE_IPC_METHOD", "").strip(),
+            ipc_path=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_IPC_PATH",
+                "SCRATCHBIRD_AI_BRIDGE_SOCKET_PATH",
+                "SCRATCHBIRD_AI_BRIDGE_PIPE_NAME",
+            ),
+            manager_auth_token=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_TOKEN",
+                "SCRATCHBIRD_AI_BRIDGE_MCP_AUTH_TOKEN",
+            )
+            or None,
+            manager_username=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_MANAGER_USERNAME",
+                "SCRATCHBIRD_AI_BRIDGE_MCP_USERNAME",
+            )
+            or None,
+            manager_database=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_MANAGER_DATABASE",
+                "SCRATCHBIRD_AI_BRIDGE_MCP_DATABASE",
+            )
+            or None,
+            manager_connection_profile=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_MANAGER_CONNECTION_PROFILE",
+                "SCRATCHBIRD_AI_BRIDGE_MCP_CONNECTION_PROFILE",
+            )
+            or "native_v3",
+            manager_client_intent=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_MANAGER_CLIENT_INTENT",
+                "SCRATCHBIRD_AI_BRIDGE_MCP_CLIENT_INTENT",
+            )
+            or "native_v3",
+            manager_client_flags=manager_flags,
+            manager_auth_fast_path=manager_auth_fast_path,
+            auth_method_id=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_METHOD_ID",
+                "SCRATCHBIRD_AI_BRIDGE_DB_AUTH_METHOD_ID",
+            ),
+            auth_method_payload=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_METHOD_PAYLOAD",
+                "SCRATCHBIRD_AI_BRIDGE_DB_AUTH_METHOD_PAYLOAD",
+            ),
+            auth_payload_json=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_PAYLOAD_JSON",
+                "SCRATCHBIRD_AI_BRIDGE_DB_AUTH_PAYLOAD_JSON",
+            ),
+            auth_payload_b64=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_PAYLOAD_B64",
+                "SCRATCHBIRD_AI_BRIDGE_DB_AUTH_PAYLOAD_B64",
+            ),
+            auth_provider_profile=_first_nonempty_env(
+                "SCRATCHBIRD_AI_BRIDGE_AUTH_PROVIDER_PROFILE",
+                "SCRATCHBIRD_AI_BRIDGE_DB_AUTH_PROVIDER_PROFILE",
+            ),
+            auth_required_methods=auth_required_methods,
+            auth_forbidden_methods=auth_forbidden_methods,
+            auth_require_channel_binding=auth_require_channel_binding,
+            workload_identity_token=(
+                _first_nonempty_env(
+                    "SCRATCHBIRD_AI_BRIDGE_WORKLOAD_IDENTITY_TOKEN",
+                    "SCRATCHBIRD_AI_BRIDGE_DB_WORKLOAD_IDENTITY_TOKEN",
+                )
+                or None
+            ),
+            proxy_principal_assertion=(
+                _first_nonempty_env(
+                    "SCRATCHBIRD_AI_BRIDGE_PROXY_PRINCIPAL_ASSERTION",
+                    "SCRATCHBIRD_AI_BRIDGE_DB_PROXY_PRINCIPAL_ASSERTION",
+                )
+                or None
+            ),
+            ldap_bind_dn=(
+                _first_nonempty_env(
+                    "SCRATCHBIRD_AI_BRIDGE_LDAP_BIND_DN",
+                    "SCRATCHBIRD_AI_BRIDGE_DB_LDAP_BIND_DN",
+                )
+                or None
+            ),
+            kerberos_spn=(
+                _first_nonempty_env(
+                    "SCRATCHBIRD_AI_BRIDGE_KERBEROS_SPN",
+                    "SCRATCHBIRD_AI_BRIDGE_DB_KERBEROS_SPN",
+                )
+                or None
+            ),
+            radius_username=(
+                _first_nonempty_env(
+                    "SCRATCHBIRD_AI_BRIDGE_RADIUS_USERNAME",
+                    "SCRATCHBIRD_AI_BRIDGE_DB_RADIUS_USERNAME",
+                )
+                or None
+            ),
+            pam_service=(
+                _first_nonempty_env(
+                    "SCRATCHBIRD_AI_BRIDGE_PAM_SERVICE",
+                    "SCRATCHBIRD_AI_BRIDGE_DB_PAM_SERVICE",
+                )
+                or None
+            ),
         )
 
     def require_enabled_dialect(self, dialect: str) -> None:
@@ -223,6 +468,122 @@ class BridgeSettings:
             status_code=404,
             message=f"No bridge DSN configured for dialect: {dialect}",
         )
+
+    def resolve_connect_kwargs(self, dialect: str) -> dict[str, Any]:
+        normalized = dialect.strip().lower()
+        dsn = self.resolve_dsn(normalized)
+        setup = _normalize_server_setup(self.server_setup)
+
+        connect_kwargs: dict[str, Any] = {
+            "dsn": dsn,
+            "protocol": "native",
+        }
+
+        if self.transport_mode:
+            connect_kwargs["transport_mode"] = self.transport_mode
+        if self.front_door_mode:
+            connect_kwargs["front_door_mode"] = self.front_door_mode
+        if self.auth_method_id:
+            connect_kwargs["auth_method_id"] = self.auth_method_id
+        if self.auth_method_payload:
+            connect_kwargs["auth_method_payload"] = self.auth_method_payload
+        if self.auth_payload_json:
+            connect_kwargs["auth_payload_json"] = self.auth_payload_json
+        if self.auth_payload_b64:
+            connect_kwargs["auth_payload_b64"] = self.auth_payload_b64
+        if self.auth_provider_profile:
+            connect_kwargs["auth_provider_profile"] = self.auth_provider_profile
+        if self.auth_required_methods:
+            connect_kwargs["auth_required_methods"] = list(self.auth_required_methods)
+        if self.auth_forbidden_methods:
+            connect_kwargs["auth_forbidden_methods"] = list(self.auth_forbidden_methods)
+        if self.auth_require_channel_binding:
+            connect_kwargs["auth_require_channel_binding"] = True
+        if self.workload_identity_token:
+            connect_kwargs["workload_identity_token"] = self.workload_identity_token
+        if self.proxy_principal_assertion:
+            connect_kwargs["proxy_principal_assertion"] = self.proxy_principal_assertion
+        if self.ldap_bind_dn:
+            connect_kwargs["ldap_bind_dn"] = self.ldap_bind_dn
+        if self.kerberos_spn:
+            connect_kwargs["kerberos_spn"] = self.kerberos_spn
+        if self.radius_username:
+            connect_kwargs["radius_username"] = self.radius_username
+        if self.pam_service:
+            connect_kwargs["pam_service"] = self.pam_service
+
+        overlap = set(self.auth_required_methods) & set(self.auth_forbidden_methods)
+        if overlap:
+            raise BridgeError(
+                status_code=400,
+                message=(
+                    "Invalid auth pinning profile: methods appear in both required "
+                    f"and forbidden sets ({', '.join(sorted(overlap))})."
+                ),
+            )
+
+        if setup == "managed":
+            connect_kwargs.setdefault("transport_mode", "managed")
+            connect_kwargs.setdefault("front_door_mode", "manager_proxy")
+        elif setup == "listener-only":
+            connect_kwargs.setdefault("transport_mode", "inet_listener")
+            connect_kwargs.setdefault("front_door_mode", "direct")
+        elif setup == "ipc-only":
+            connect_kwargs.setdefault("transport_mode", "local_ipc")
+            connect_kwargs.setdefault("front_door_mode", "direct")
+        elif setup == "embedded":
+            connect_kwargs.setdefault("transport_mode", "embedded")
+            connect_kwargs.setdefault("front_door_mode", "direct")
+            # Embedded mode is non-shared: single private connection without server front-door.
+            connect_kwargs["shared"] = False
+            connect_kwargs["connection_scope"] = "private"
+            connect_kwargs["embedded_single_connection"] = True
+
+        if self.ipc_method:
+            connect_kwargs["ipc_method"] = self.ipc_method
+        if self.ipc_path:
+            connect_kwargs["ipc_path"] = self.ipc_path
+
+        effective_front_door_mode = str(connect_kwargs.get("front_door_mode", "")).strip().lower()
+        effective_transport = str(connect_kwargs.get("transport_mode", "")).strip().lower()
+        if effective_front_door_mode in {"managed", "manager_proxy", "manager-proxy"}:
+            connect_kwargs["front_door_mode"] = "manager_proxy"
+            connect_kwargs["transport_mode"] = "managed"
+            effective_front_door_mode = "manager_proxy"
+            effective_transport = "managed"
+        elif effective_transport == "managed":
+            connect_kwargs["front_door_mode"] = "manager_proxy"
+            effective_front_door_mode = "manager_proxy"
+
+        manager_mode = effective_front_door_mode in {
+            "managed",
+            "manager_proxy",
+            "manager-proxy",
+        } or effective_transport == "managed"
+
+        if manager_mode:
+            if self.manager_auth_token:
+                connect_kwargs["manager_auth_token"] = self.manager_auth_token
+            if self.manager_username:
+                connect_kwargs["manager_username"] = self.manager_username
+            if self.manager_database:
+                connect_kwargs["manager_database"] = self.manager_database
+            connect_kwargs["manager_connection_profile"] = (
+                self.manager_connection_profile or "native_v3"
+            )
+            connect_kwargs["manager_client_intent"] = self.manager_client_intent or "native_v3"
+            connect_kwargs["manager_client_flags"] = max(0, min(65535, self.manager_client_flags))
+            connect_kwargs["manager_auth_fast_path"] = bool(self.manager_auth_fast_path)
+            if "manager_auth_token" not in connect_kwargs and not _has_manager_token_in_dsn(dsn):
+                raise BridgeError(
+                    status_code=400,
+                    message=(
+                        "Managed setup requires manager_auth_token "
+                        "(set SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_TOKEN or include in DSN)."
+                    ),
+                )
+
+        return connect_kwargs
 
 
 class ScratchBirdDriverBackend:
@@ -509,9 +870,9 @@ class ScratchBirdDriverBackend:
         return out
 
     def _connect(self, dialect: str):
-        dsn = self.settings.resolve_dsn(dialect)
+        connect_kwargs = self.settings.resolve_connect_kwargs(dialect)
         try:
-            return self._scratchbird.connect(dsn=dsn)
+            return self._scratchbird.connect(**connect_kwargs)
         except Exception as exc:
             raise BridgeError(status_code=503, message=f"Connection failed for dialect {dialect}: {exc}") from exc
 

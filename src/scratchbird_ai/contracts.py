@@ -5,7 +5,13 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
-QueryMode = Literal["read_only", "mutation_with_approval"]
+QueryMode = Literal[
+    "read_only",
+    "mutation_with_approval",
+    "ai_analysis",
+    "ai_mutation_pending_approval",
+    "ai_mutation_approved",
+]
 
 
 @dataclass(slots=True)
@@ -53,6 +59,7 @@ class QueryResponse:
     compile_artifact_id: str
     execution_artifact_id: str
     result_rows: list[dict[str, Any]]
+    row_count: int
     notices: list[str]
     trace_id: str
 

@@ -59,6 +59,11 @@ Minimum required variables:
 
 - `SCRATCHBIRD_AI_BRIDGE_DEFAULT_DSN`
 - `SCRATCHBIRD_AI_BRIDGE_PYTHON_DRIVER_SRC` if driver is not pip-installed
+- `SCRATCHBIRD_AI_BRIDGE_SERVER_SETUP` when not using `listener-only` (valid: `managed`, `ipc-only`, `embedded`)
+
+Managed setup additional requirement:
+
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_TOKEN` (or `mcp` alias)
 
 Optional security:
 
@@ -103,4 +108,6 @@ PYTHONPATH=src tools/smoke_http_contract.py --mode live --dialect native
 - `ImportError: scratchbird`: set `SCRATCHBIRD_AI_BRIDGE_PYTHON_DRIVER_SRC` to the driver `src` path.
 - `401 Unauthorized`: set matching `SCRATCHBIRD_AI_HTTP_API_TOKEN` and `SCRATCHBIRD_AI_BRIDGE_API_TOKEN`.
 - `404 Dialect not enabled`: include dialect in `SCRATCHBIRD_AI_BRIDGE_DIALECTS`.
+- `400 Managed setup requires manager_auth_token`: set `SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_TOKEN` or include `manager_auth_token` in DSN.
+- `503 Connection failed` in `ipc-only`/`embedded`: verify the Python driver build supports those transport modes.
 - `503 Connection failed`: verify DSN and ScratchBird server reachability.

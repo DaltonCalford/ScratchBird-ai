@@ -1,0 +1,10 @@
+{
+  "generated_at_utc": "2026-02-24T17:45:00Z",
+  "git_commit": "TEMPLATE",
+  "status": "FAIL",
+  "check_count": 1,
+  "passed_checks": 0,
+  "failed_checks": [
+    "template placeholder for EVID-06 must be replaced with real evidence"
+  ]
+}

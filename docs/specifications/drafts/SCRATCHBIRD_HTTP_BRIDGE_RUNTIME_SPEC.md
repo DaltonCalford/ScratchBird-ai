@@ -47,8 +47,18 @@ Payload contracts match `SCRATCHBIRD_HTTP_ADAPTER_CONTRACT_SPEC.md`.
 - `SCRATCHBIRD_AI_BRIDGE_DIALECTS` (default `native`)
 - `SCRATCHBIRD_AI_BRIDGE_DEFAULT_DSN` (fallback DSN for enabled dialects)
 - `SCRATCHBIRD_AI_BRIDGE_DSN_<DIALECT>` (dialect-specific DSN)
+- `SCRATCHBIRD_AI_BRIDGE_SERVER_SETUP` (`listener-only` | `managed` | `ipc-only` | `embedded`)
+- `SCRATCHBIRD_AI_BRIDGE_TRANSPORT_MODE` (explicit transport override)
+- `SCRATCHBIRD_AI_BRIDGE_FRONT_DOOR_MODE` (explicit ingress override)
+- `SCRATCHBIRD_AI_BRIDGE_IPC_METHOD`, `SCRATCHBIRD_AI_BRIDGE_IPC_PATH` (ipc/embedded setup)
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_TOKEN` / `SCRATCHBIRD_AI_BRIDGE_MCP_AUTH_TOKEN` (managed signon)
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_*` / `SCRATCHBIRD_AI_BRIDGE_MCP_*` (managed profile/intent/flags/fast-path fields)
 - `SCRATCHBIRD_AI_BRIDGE_PYTHON_DRIVER_SRC` (ScratchBird Python driver source path)
 - `SCRATCHBIRD_AI_BRIDGE_STRICT_COMPILE` (if true, compile probe failures return errors)
+
+Embedded setup semantics:
+- `embedded` is treated as single-connection/non-shared maintenance mode.
+- Bridge connect kwargs force private scope (`shared=false`, `connection_scope=private`).
 
 ## 6. Backend Mode (Current)
 

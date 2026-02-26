@@ -114,6 +114,15 @@ class HttpServiceIntegrationTests(unittest.TestCase):
             query_text="SELECT 1",
             mode="read_only",
             options={"limit": 1},
+            context={
+                "security_context": {
+                    "tenant_id": "tenant_http",
+                    "actor_id": "actor_http",
+                    "roles": ["analyst"],
+                    "session_id": "sess_http",
+                    "context_version": 1,
+                }
+            },
         )
 
         self.assertEqual(response.request_id, "req_http_integration_1")

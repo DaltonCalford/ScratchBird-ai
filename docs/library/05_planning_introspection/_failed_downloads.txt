@@ -1,0 +1,2 @@
+FAIL mysql_explain_output.html  https://dev.mysql.com/doc/refman/8.4/en/explain-output.html
+FAIL in_toto_spec.html  https://in-toto.io/spec/

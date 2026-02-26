@@ -1,0 +1,1596 @@
+ <!DOCTYPE html>
+		<html
+			class="layout layout-holy-grail   show-table-of-contents conceptual show-breadcrumb default-focus"
+			lang="en-us"
+			dir="ltr"
+			data-authenticated="false"
+			data-auth-status-determined="false"
+			data-target="docs"
+			x-ms-format-detection="none"
+		>
+			
+		<head>
+			<title>Plugins in Semantic Kernel | Microsoft Learn</title>
+			<meta charset="utf-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<meta name="color-scheme" content="light dark" />
+
+			<meta name="description" content="Learn how to use AI plugins in Semantic Kernel" />
+			<link rel="canonical" href="https://learn.microsoft.com/en-us/semantic-kernel/concepts/plugins/" /> 
+
+			<!-- Non-customizable open graph and sharing-related metadata -->
+			<meta name="twitter:card" content="summary_large_image" />
+			<meta name="twitter:site" content="@MicrosoftLearn" />
+			<meta property="og:type" content="website" />
+			<meta property="og:image:alt" content="Microsoft Learn" />
+			<meta property="og:image" content="https://learn.microsoft.com/en-us/media/open-graph-image.png" />
+			<!-- Page specific open graph and sharing-related metadata -->
+			<meta property="og:title" content="Plugins in Semantic Kernel" />
+			<meta property="og:url" content="https://learn.microsoft.com/en-us/semantic-kernel/concepts/plugins/" />
+			<meta property="og:description" content="Learn how to use AI plugins in Semantic Kernel" />
+			<meta name="platform_id" content="c37e56dd-d76c-2b4b-b534-836751e688d8" /> 
+			<meta name="locale" content="en-us" />
+			 <meta name="adobe-target" content="true" /> 
+			<meta name="uhfHeaderId" content="MSDocsHeader-SemanticKernel" />
+
+			<meta name="page_type" content="conceptual" />
+
+			<!--page specific meta tags-->
+			
+
+			<!-- custom meta tags -->
+			
+		<meta name="zone_pivot_group_filename:" content="zone_pivot_group.json" />
+	
+		<meta name="breadcrumb_path" content="/semantic-kernel/breadcrumb/toc.json" />
+	
+		<meta name="feedback_system" content="None" />
+	
+		<meta name="zone_pivot_groups" content="programming-languages" />
+	
+		<meta name="author" content="sophialagerkranspandey" />
+	
+		<meta name="ms.topic" content="conceptual" />
+	
+		<meta name="ms.author" content="sopand" />
+	
+		<meta name="ms.date" content="2023-07-12T00:00:00Z" />
+	
+		<meta name="ms.service" content="semantic-kernel" />
+	
+		<meta name="document_id" content="e3a3f41b-0fb6-a25c-ed40-eff2404d94bf" />
+	
+		<meta name="document_version_independent_id" content="e3a3f41b-0fb6-a25c-ed40-eff2404d94bf" />
+	
+		<meta name="updated_at" content="2025-04-16T15:30:00Z" />
+	
+		<meta name="original_content_git_url" content="https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/live/semantic-kernel/concepts/plugins/index.md" />
+	
+		<meta name="gitcommit" content="https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/4fc23469de5617369979714a94b0df1e954dfedd/semantic-kernel/concepts/plugins/index.md" />
+	
+		<meta name="git_commit_id" content="4fc23469de5617369979714a94b0df1e954dfedd" />
+	
+		<meta name="site_name" content="Docs" />
+	
+		<meta name="depot_name" content="MSDN.semantic-kernel" />
+	
+		<meta name="schema" content="Conceptual" />
+	
+		<meta name="toc_rel" content="../../toc.json" />
+	
+		<meta name="feedback_product_url" content="" />
+	
+		<meta name="feedback_help_link_type" content="" />
+	
+		<meta name="feedback_help_link_url" content="" />
+	
+		<meta name="word_count" content="3042" />
+	
+		<meta name="asset_id" content="concepts/plugins/index" />
+	
+		<meta name="moniker_range_name" content="" />
+	
+		<meta name="item_type" content="Content" />
+	
+		<meta name="source_path" content="semantic-kernel/concepts/plugins/index.md" />
+	
+		<meta name="previous_tlsh_hash" content="62D19652740C9701EBC34B452C3BFA58A7F440087BF099B8523762E1C1563EE36791AD96EB1FB344333283532162994F11FDE77DD2AD33619986287582980E62A7E937BACD" />
+	
+		<meta name="github_feedback_content_git_url" content="https://github.com/MicrosoftDocs/semantic-kernel-docs/blob/main/semantic-kernel/concepts/plugins/index.md" />
+	
+		<meta name="markdown_url" content="https://learn.microsoft.com/en-us/semantic-kernel/concepts/plugins/?accept=text/markdown" />
+	 
+		<meta name="cmProducts" content="https://authoring-docs-microsoft.poolparty.biz/devrel/540ac133-a371-4dbb-8f94-28d6cc77a70b" data-source="generated" />
+	
+		<meta name="spProducts" content="https://authoring-docs-microsoft.poolparty.biz/devrel/60bfc045-f127-4841-9d00-ea35495a5800" data-source="generated" />
+	
+
+			<!-- assets and js globals -->
+			
+			<link rel="stylesheet" href="/static/assets/0.4.03336.7510-899cc417/styles/site-ltr.css" />
+			
+			<link rel="preconnect" href="//mscom.demdex.net" crossorigin />
+						<link rel="dns-prefetch" href="//target.microsoft.com" />
+						<link rel="dns-prefetch" href="//microsoftmscompoc.tt.omtrdc.net" />
+						<link
+							rel="preload"
+							as="script"
+							href="/static/third-party/adobe-target/at-js/2.9.0/at.js"
+							integrity="sha384-l4AKhsU8cUWSht4SaJU5JWcHEWh1m4UTqL08s6b/hqBLAeIDxTNl+AMSxTLx6YMI"
+							crossorigin="anonymous"
+							id="adobe-target-script"
+							type="application/javascript"
+						/>
+			<script src="https://wcpstatic.microsoft.com/mscc/lib/v2/wcp-consent.js"></script>
+			<script src="https://js.monitor.azure.com/scripts/c/ms.jsll-4.min.js"></script>
+			<script src="/_themes/docs.theme/master/en-us/_themes/global/deprecation.js"></script>
+
+			<!-- msdocs global object -->
+			<script id="msdocs-script">
+		var msDocs = {
+  "environment": {
+    "accessLevel": "online",
+    "azurePortalHostname": "portal.azure.com",
+    "reviewFeatures": false,
+    "supportLevel": "production",
+    "systemContent": true,
+    "siteName": "learn",
+    "legacyHosting": false
+  },
+  "data": {
+    "contentLocale": "en-us",
+    "contentDir": "ltr",
+    "userLocale": "en-us",
+    "userDir": "ltr",
+    "pageTemplate": "Conceptual",
+    "brand": "",
+    "context": {},
+    "standardFeedback": false,
+    "showFeedbackReport": false,
+    "feedbackHelpLinkType": "",
+    "feedbackHelpLinkUrl": "",
+    "feedbackSystem": "None",
+    "feedbackGitHubRepo": "",
+    "feedbackProductUrl": "",
+    "extendBreadcrumb": false,
+    "isEditDisplayable": false,
+    "isPrivateUnauthorized": false,
+    "hideViewSource": false,
+    "isPermissioned": false,
+    "hasRecommendations": true,
+    "contributors": [
+      {
+        "name": "sophialagerkranspandey",
+        "url": "https://github.com/sophialagerkranspandey"
+      },
+      {
+        "name": "eavanvalkenburg",
+        "url": "https://github.com/eavanvalkenburg"
+      },
+      {
+        "name": "SergeyMenshykh",
+        "url": "https://github.com/SergeyMenshykh"
+      },
+      {
+        "name": "moonbox3",
+        "url": "https://github.com/moonbox3"
+      },
+      {
+        "name": "johnoliver",
+        "url": "https://github.com/johnoliver"
+      }
+    ]
+  },
+  "functions": {}
+};;
+	</script>
+
+			<!-- base scripts, msdocs global should be before this -->
+			<script src="/static/assets/0.4.03336.7510-899cc417/scripts/en-us/index-docs.js"></script>
+			
+
+			<!-- json-ld -->
+			
+		</head>
+	
+			<body
+				id="body"
+				data-bi-name="body"
+				class="layout-body "
+				lang="en-us"
+				dir="ltr"
+			>
+				<header class="layout-body-header">
+		<div class="header-holder has-default-focus">
+			
+		<a
+			href="#main"
+			
+			style="z-index: 1070"
+			class="outline-color-text visually-hidden-until-focused position-fixed inner-focus focus-visible top-0 left-0 right-0 padding-xs text-align-center background-color-body"
+			
+		>
+			Skip to main content
+		</a>
+	
+		<a
+			href="#"
+			data-skip-to-ask-learn
+			style="z-index: 1070"
+			class="outline-color-text visually-hidden-until-focused position-fixed inner-focus focus-visible top-0 left-0 right-0 padding-xs text-align-center background-color-body"
+			hidden
+		>
+			Skip to Ask Learn chat experience
+		</a>
+	
+
+			<div hidden id="cookie-consent-holder" data-test-id="cookie-consent-container"></div>
+			<!-- Unsupported browser warning -->
+			<div
+				id="unsupported-browser"
+				style="background-color: white; color: black; padding: 16px; border-bottom: 1px solid grey;"
+				hidden
+			>
+				<div style="max-width: 800px; margin: 0 auto;">
+					<p style="font-size: 24px">This browser is no longer supported.</p>
+					<p style="font-size: 16px; margin-top: 16px;">
+						Upgrade to Microsoft Edge to take advantage of the latest features, security updates, and technical support.
+					</p>
+					<div style="margin-top: 12px;">
+						<a
+							href="https://go.microsoft.com/fwlink/p/?LinkID=2092881 "
+							style="background-color: #0078d4; border: 1px solid #0078d4; color: white; padding: 6px 12px; border-radius: 2px; display: inline-block;"
+						>
+							Download Microsoft Edge
+						</a>
+						<a
+							href="https://learn.microsoft.com/en-us/lifecycle/faq/internet-explorer-microsoft-edge"
+							style="background-color: white; padding: 6px 12px; border: 1px solid #505050; color: #171717; border-radius: 2px; display: inline-block;"
+						>
+							More info about Internet Explorer and Microsoft Edge
+						</a>
+					</div>
+				</div>
+			</div>
+			<!-- site header -->
+			<header
+				id="ms--site-header"
+				data-test-id="site-header-wrapper"
+				role="banner"
+				itemscope="itemscope"
+				itemtype="http://schema.org/Organization"
+			>
+				<div
+					id="ms--mobile-nav"
+					class="site-header display-none-tablet padding-inline-none gap-none"
+					data-bi-name="mobile-header"
+					data-test-id="mobile-header"
+				></div>
+				<div
+					id="ms--primary-nav"
+					class="site-header display-none display-flex-tablet"
+					data-bi-name="L1-header"
+					data-test-id="primary-header"
+				></div>
+				<div
+					id="ms--secondary-nav"
+					class="site-header display-none display-flex-tablet"
+					data-bi-name="L2-header"
+					data-test-id="secondary-header"
+					
+				></div>
+			</header>
+			
+		<!-- banner -->
+		<div data-banner>
+			<div id="disclaimer-holder"></div>
+			
+		</div>
+		<!-- banner end -->
+	
+		</div>
+	</header>
+				 <section
+					id="layout-body-menu"
+					class="layout-body-menu display-flex"
+					data-bi-name="menu"
+			  >
+					
+		<div
+			id="left-container"
+			class="left-container display-none display-block-tablet padding-inline-sm padding-bottom-sm width-full"
+			data-toc-container="true"
+		>
+			<!-- Regular TOC content (default) -->
+			<div id="ms--toc-content" class="height-full">
+				<nav
+					id="affixed-left-container"
+					class="margin-top-sm-tablet position-sticky display-flex flex-direction-column"
+					aria-label="Primary"
+					data-bi-name="left-toc"
+					role="navigation"
+				></nav>
+			</div>
+			<!-- Collapsible TOC content (hidden by default) -->
+			<div id="ms--toc-content-collapsible" class="height-full" hidden>
+				<nav
+					id="affixed-left-container"
+					class="margin-top-sm-tablet position-sticky display-flex flex-direction-column"
+					aria-label="Primary"
+					data-bi-name="left-toc"
+					role="navigation"
+				>
+					<div
+						id="ms--collapsible-toc-header"
+						class="display-flex flex-direction-row-reverse justify-content-space-between align-items-center margin-bottom-xxs"
+					>
+						<button
+							type="button"
+							class="button button-clear inner-focus"
+							data-collapsible-toc-toggle
+							aria-expanded="true"
+							aria-controls="ms--collapsible-toc-content"
+							aria-label="Table of contents"
+						>
+							<span class="icon font-size-h4" aria-hidden="true">
+								<span class="docon docon-panel-left-contract"></span>
+							</span>
+						</button>
+						<div id="ms--collapsible-toc-moniker-slot" class="flex-grow-1"></div>
+					</div>
+				</nav>
+			</div>
+		</div>
+	
+			  </section>
+
+				<main
+					id="main"
+					role="main"
+					class="layout-body-main "
+					data-bi-name="content"
+					lang="en-us"
+					dir="ltr"
+				>
+					
+			<div
+		id="ms--content-header"
+		class="content-header default-focus border-bottom-none"
+		data-bi-name="content-header"
+	>
+		<div class="content-header-controls margin-xxs margin-inline-sm-tablet">
+			<button
+				type="button"
+				class="contents-button button button-sm margin-right-xxs"
+				data-bi-name="contents-expand"
+				aria-haspopup="true"
+				data-contents-button
+			>
+				<span class="icon" aria-hidden="true"><span class="docon docon-menu"></span></span>
+				<span class="contents-expand-title"> Table of contents </span>
+			</button>
+			<button
+				type="button"
+				class="ap-collapse-behavior ap-expanded button button-sm"
+				data-bi-name="ap-collapse"
+				aria-controls="action-panel"
+			>
+				<span class="icon" aria-hidden="true"><span class="docon docon-exit-mode"></span></span>
+				<span>Exit editor mode</span>
+			</button>
+		</div>
+	</div>
+			<div data-main-column class="padding-sm padding-top-none padding-top-sm-tablet">
+				<div>
+					
+		<div id="article-header" class="background-color-body margin-bottom-xs display-none-print">
+			<div class="display-flex align-items-center justify-content-space-between">
+				
+		<details
+			id="article-header-breadcrumbs-overflow-popover"
+			class="popover"
+			data-for="article-header-breadcrumbs"
+		>
+			<summary
+				class="button button-clear button-primary button-sm inner-focus"
+				aria-label="All breadcrumbs"
+			>
+				<span class="icon">
+					<span class="docon docon-more"></span>
+				</span>
+			</summary>
+			<div id="article-header-breadcrumbs-overflow" class="popover-content padding-none"></div>
+		</details>
+
+		<bread-crumbs
+			id="article-header-breadcrumbs"
+			role="group"
+			aria-label="Breadcrumbs"
+			data-test-id="article-header-breadcrumbs"
+			class="overflow-hidden flex-grow-1 margin-right-sm margin-right-md-tablet margin-right-lg-desktop margin-left-negative-xxs padding-left-xxs"
+		></bread-crumbs>
+	 
+		<div
+			id="article-header-page-actions"
+			class="opacity-none margin-left-auto display-flex flex-wrap-no-wrap align-items-stretch"
+		>
+			
+		<button
+			class="button button-sm border-none inner-focus display-none-tablet flex-shrink-0 "
+			data-bi-name="ask-learn-assistant-entry"
+			data-test-id="ask-learn-assistant-modal-entry-mobile"
+			data-ask-learn-modal-entry
+			
+			type="button"
+			style="min-width: max-content;"
+			aria-expanded="false"
+			aria-label="Ask Learn"
+			hidden
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-chat-sparkle-fill gradient-ask-learn-logo"></span>
+			</span>
+		</button>
+		<button
+			class="button button-sm display-none display-inline-flex-tablet display-none-desktop flex-shrink-0 margin-right-xxs border-color-ask-learn "
+			data-bi-name="ask-learn-assistant-entry"
+			
+			data-test-id="ask-learn-assistant-modal-entry-tablet"
+			data-ask-learn-modal-entry
+			type="button"
+			style="min-width: max-content;"
+			aria-expanded="false"
+			hidden
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-chat-sparkle-fill gradient-ask-learn-logo"></span>
+			</span>
+			<span>Ask Learn</span>
+		</button>
+		<button
+			class="button button-sm display-none flex-shrink-0 display-inline-flex-desktop margin-right-xxs border-color-ask-learn "
+			data-bi-name="ask-learn-assistant-entry"
+			
+			data-test-id="ask-learn-assistant-flyout-entry"
+			data-ask-learn-flyout-entry
+			data-flyout-button="toggle"
+			type="button"
+			style="min-width: max-content;"
+			aria-expanded="false"
+			aria-controls="ask-learn-flyout"
+			hidden
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-chat-sparkle-fill gradient-ask-learn-logo"></span>
+			</span>
+			<span>Ask Learn</span>
+		</button>
+	 
+		<button
+			type="button"
+			id="ms--focus-mode-button"
+			data-focus-mode
+			data-bi-name="focus-mode-entry"
+			class="button button-sm flex-shrink-0 margin-right-xxs display-none display-inline-flex-desktop"
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-glasses"></span>
+			</span>
+			<span>Focus mode</span>
+		</button>
+	 
+
+			<details class="popover popover-right" id="article-header-page-actions-overflow">
+				<summary
+					class="justify-content-flex-start button button-clear button-sm button-primary inner-focus"
+					aria-label="More actions"
+					title="More actions"
+				>
+					<span class="icon" aria-hidden="true">
+						<span class="docon docon-more-vertical"></span>
+					</span>
+				</summary>
+				<div class="popover-content">
+					
+		<button
+			data-page-action-item="overflow-mobile"
+			type="button"
+			class="button-block button-sm inner-focus button button-clear display-none-tablet justify-content-flex-start text-align-left"
+			data-bi-name="contents-expand"
+			data-contents-button
+			data-popover-close
+		>
+			<span class="icon">
+				<span class="docon docon-editor-list-bullet" aria-hidden="true"></span>
+			</span>
+			<span class="contents-expand-title">Table of contents</span>
+		</button>
+	 
+		<a
+			id="lang-link-overflow"
+			class="button-sm inner-focus button button-clear button-block justify-content-flex-start text-align-left"
+			data-bi-name="language-toggle"
+			data-page-action-item="overflow-all"
+			data-check-hidden="true"
+			data-read-in-link
+			href="#"
+			hidden
+		>
+			<span class="icon" aria-hidden="true" data-read-in-link-icon>
+				<span class="docon docon-locale-globe"></span>
+			</span>
+			<span data-read-in-link-text>Read in English</span>
+		</a>
+	 
+		<button
+			type="button"
+			class="collection button button-clear button-sm button-block justify-content-flex-start text-align-left inner-focus"
+			data-list-type="collection"
+			data-bi-name="collection"
+			data-page-action-item="overflow-all"
+			data-check-hidden="true"
+			data-popover-close
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-circle-addition"></span>
+			</span>
+			<span class="collection-status">Add</span>
+		</button>
+	
+					
+		<button
+			type="button"
+			class="collection button button-block button-clear button-sm justify-content-flex-start text-align-left inner-focus"
+			data-list-type="plan"
+			data-bi-name="plan"
+			data-page-action-item="overflow-all"
+			data-check-hidden="true"
+			data-popover-close
+			hidden
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-circle-addition"></span>
+			</span>
+			<span class="plan-status">Add to plan</span>
+		</button>
+	  
+		<a
+			data-contenteditbtn
+			class="button button-clear button-block button-sm inner-focus justify-content-flex-start text-align-left text-decoration-none"
+			data-bi-name="edit"
+			hidden
+			href="https://github.com/MicrosoftDocs/semantic-kernel-docs/blob/main/semantic-kernel/concepts/plugins/index.md"
+			data-original_content_git_url="https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/live/semantic-kernel/concepts/plugins/index.md"
+			data-original_content_git_url_template="{repo}/blob/{branch}/semantic-kernel/concepts/plugins/index.md"
+			data-pr_repo=""
+			data-pr_branch=""
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-edit-outline"></span>
+			</span>
+			<span>Edit</span>
+		</a>
+	
+					
+		<hr class="margin-block-xxs" />
+		<h4 class="font-size-sm padding-left-xxs">Share via</h4>
+		
+					<a
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-facebook"
+						data-bi-name="facebook"
+						data-page-action-item="overflow-all"
+						href="#"
+					>
+						<span class="icon color-primary" aria-hidden="true">
+							<span class="docon docon-facebook-share"></span>
+						</span>
+						<span>Facebook</span>
+					</a>
+
+					<a
+						href="#"
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-twitter"
+						data-bi-name="twitter"
+						data-page-action-item="overflow-all"
+					>
+						<span class="icon color-text" aria-hidden="true">
+							<span class="docon docon-xlogo-share"></span>
+						</span>
+						<span>x.com</span>
+					</a>
+
+					<a
+						href="#"
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-linkedin"
+						data-bi-name="linkedin"
+						data-page-action-item="overflow-all"
+					>
+						<span class="icon color-primary" aria-hidden="true">
+							<span class="docon docon-linked-in-logo"></span>
+						</span>
+						<span>LinkedIn</span>
+					</a>
+					<a
+						href="#"
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-email"
+						data-bi-name="email"
+						data-page-action-item="overflow-all"
+					>
+						<span class="icon color-primary" aria-hidden="true">
+							<span class="docon docon-mail-message"></span>
+						</span>
+						<span>Email</span>
+					</a>
+			  
+	 
+		<hr class="margin-block-xxs" />
+		
+				<button
+					class="button button-block button-clear button-sm justify-content-flex-start text-align-left inner-focus"
+					type="button"
+					data-bi-name="copy-markdown"
+					data-page-action-item="overflow-all"
+					data-copy-markdown
+					data-copy-state="idle"
+					data-check-hidden="true"
+				>
+					<span class="icon color-primary" aria-hidden="true">
+						<span data-show-when="idle" class="docon docon-code-lang"></span>
+						<span data-show-when="loading" class="loader" hidden></span>
+						<span data-show-when="success" class="docon docon-check-mark" hidden></span>
+					</span>
+					<span>Copy Markdown</span>
+				</button>
+		   
+				<button
+					class="button button-block button-clear button-sm justify-content-flex-start text-align-left inner-focus"
+					type="button"
+					data-bi-name="print"
+					data-page-action-item="overflow-all"
+					data-popover-close
+					data-print-page
+					data-check-hidden="true"
+				>
+					<span class="icon color-primary" aria-hidden="true">
+						<span class="docon docon-print"></span>
+					</span>
+					<span>Print</span>
+				</button>
+		  
+	
+				</div>
+			</details>
+		</div>
+	
+			</div>
+		</div>
+	  
+		<!-- privateUnauthorizedTemplate is hidden by default -->
+		<div unauthorized-private-section data-bi-name="permission-content-unauthorized-private" hidden>
+			<hr class="hr margin-top-xs margin-bottom-sm" />
+			<div class="notification notification-info">
+				<div class="notification-content">
+					<p class="margin-top-none notification-title">
+						<span class="icon">
+							<span class="docon docon-exclamation-circle-solid" aria-hidden="true"></span>
+						</span>
+						<span>Note</span>
+					</p>
+					<p class="margin-top-none authentication-determined not-authenticated">
+						Access to this page requires authorization. You can try <a class="docs-sign-in" href="#" data-bi-name="permission-content-sign-in">signing in</a> or <a  class="docs-change-directory" data-bi-name="permisson-content-change-directory">changing directories</a>.
+					</p>
+					<p class="margin-top-none authentication-determined authenticated">
+						Access to this page requires authorization. You can try <a class="docs-change-directory" data-bi-name="permisson-content-change-directory">changing directories</a>.
+					</p>
+				</div>
+			</div>
+		</div>
+	
+					<div class="content"><h1 id="what-is-a-plugin">What is a Plugin?</h1></div>
+					
+		<div
+			id="article-metadata"
+			data-bi-name="article-metadata"
+			data-test-id="article-metadata"
+			class="page-metadata-container display-flex gap-xxs justify-content-space-between align-items-center flex-wrap-wrap"
+		>
+			 
+				<div
+					id="user-feedback"
+					class="margin-block-xxs display-none display-none-print"
+					hidden
+					data-hide-on-archived
+				>
+					
+		<button
+			id="user-feedback-button"
+			data-test-id="conceptual-feedback-button"
+			class="button button-sm button-clear button-primary display-none"
+			type="button"
+			data-bi-name="user-feedback-button"
+			data-user-feedback-button
+			hidden
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-like"></span>
+			</span>
+			<span>Feedback</span>
+		</button>
+	
+				</div>
+		  
+		</div>
+	 
+		<div data-id="ai-summary" hidden>
+			<div id="ms--ai-summary-cta" class="margin-top-xs display-flex align-items-center">
+				<span class="icon" aria-hidden="true">
+					<span class="docon docon-sparkle-fill gradient-text-vivid"></span>
+				</span>
+				<button
+					id="ms--ai-summary"
+					type="button"
+					class="tag tag-sm tag-suggestion margin-left-xxs"
+					data-test-id="ai-summary-cta"
+					data-bi-name="ai-summary-cta"
+					data-an="ai-summary"
+				>
+					<span class="ai-summary-cta-text">
+						Summarize this article for me
+					</span>
+				</button>
+			</div>
+			<!-- Slot where the client will render the summary card after the user clicks the CTA -->
+			<div id="ms--ai-summary-header" class="margin-top-xs"></div>
+		</div>
+	 
+		<nav
+			id="center-doc-outline"
+			class="doc-outline is-hidden-desktop display-none-print margin-bottom-sm"
+			data-bi-name="intopic toc"
+			aria-label="In this article"
+		>
+			<h2 id="ms--in-this-article" class="title is-6 margin-block-xs">
+				In this article
+			</h2>
+		</nav>
+	
+					<div class="content"><section class="row">
+<div class="column">
+<p>Plugins are a key component of Semantic Kernel. If you have already used plugins from ChatGPT or Copilot extensions in Microsoft 365, you’re already familiar with them. With plugins, you can encapsulate your existing APIs into a collection that can be used by an AI. This allows you to give your AI the ability to perform actions that it wouldn’t be able to do otherwise.</p>
+<p>Behind the scenes, Semantic Kernel leverages <a href="https://platform.openai.com/docs/guides/function-calling" data-linktype="external">function calling</a>, a native feature of most of the latest LLMs to allow LLMs, to perform <a href="../planning" data-linktype="relative-path">planning</a> and to invoke your APIs. With function calling, LLMs can request (i.e., call) a particular function. Semantic Kernel then marshals the request to the appropriate function in your codebase and returns the results back to the LLM so the LLM can generate a final response.</p>
+</div>
+<div class="column">
+<p><img src="../../media/designed-for-modular-extensibility-vertical.png" alt="Semantic Kernel Plugin" data-linktype="relative-path"></p>
+</div>
+</section>
+<p>Not all AI SDKs have an analogous concept to plugins (most just have functions or tools). In enterprise scenarios, however, plugins are valuable because they encapsulate a set of functionality that mirrors how enterprise developers already develop services and APIs. Plugins also play nicely with dependency injection. Within a plugin's constructor, you can inject services that are necessary to perform the work of the plugin (e.g., database connections, HTTP clients, etc.). This is difficult to accomplish with other SDKs that lack plugins.</p>
+<h2 id="anatomy-of-a-plugin">Anatomy of a plugin</h2>
+<p>At a high-level, a plugin is a group of <a href="#importing-different-types-of-plugins" data-linktype="self-bookmark">functions</a> that can be exposed to AI apps and services. The functions within plugins can then be orchestrated by an AI application to accomplish user requests. Within Semantic Kernel, you can invoke these functions automatically with function calling.</p>
+<div class="NOTE">
+<p>Note</p>
+<p>In other platforms, functions are often referred to as "tools" or "actions". In Semantic Kernel, we use the term "functions" since they are typically defined as native functions in your codebase.</p>
+</div>
+<p>Just providing functions, however, is not enough to make a plugin. To power automatic orchestration with function calling, plugins also need to provide details that semantically describe how they behave. Everything from the function's input, output, and side effects need to be described in a way that the AI can understand, otherwise, the AI will not correctly call the function.</p>
+<p>For example, the sample <code>WriterPlugin</code> plugin on the right has functions with semantic descriptions that describe what each function does. An LLM can then use these descriptions to choose the best functions to call to fulfill a user's ask.</p>
+<section class="row">
+<div class="column">
+<p>In the picture on the right, an LLM would likely call the <code>ShortPoem</code> and <code>StoryGen</code> functions to satisfy the users ask thanks to the provided semantic descriptions.</p>
+</div>
+<div class="column span3">
+<p><img src="../../media/writer-plugin-example.png" alt="Semantic description within the WriterPlugin plugin" data-linktype="relative-path"></p>
+</div>
+</section>
+<h3 id="importing-different-types-of-plugins">Importing different types of plugins</h3>
+<p>There are three primary ways of importing plugins into Semantic Kernel: using <a href="adding-native-plugins" data-linktype="relative-path">native code</a>, using an <a href="adding-openapi-plugins" data-linktype="relative-path">OpenAPI specification</a> or from a <a href="adding-mcp-plugins" data-linktype="relative-path">MCP Server</a> The former allows you to author plugins in your existing codebase that can leverage dependencies and services you already have. The latter two allow you to import plugins from an OpenAPI specification or a MCP Server, which can be shared across different programming languages and platforms.</p>
+<p>Below we provide a simple example of importing and using a native plugin. To learn more about how to  import these different types of plugins, refer to the following articles:</p>
+<ul>
+<li><a href="adding-native-plugins" data-linktype="relative-path">Importing native code</a></li>
+<li><a href="adding-openapi-plugins" data-linktype="relative-path">Importing an OpenAPI specification</a></li>
+<li><a href="adding-mcp-plugins" data-linktype="relative-path">Importing a MCP Server</a></li>
+</ul>
+<div class="TIP">
+<p>Tip</p>
+<p>When getting started, we recommend using native code plugins. As your application matures, and as you work across cross-platform teams, you may want to consider using OpenAPI specifications to share plugins across different programming languages and platforms. You can then also create a MCP Server from your Kernel instance, which allows other applications to consume your plugins as a service.</p>
+</div>
+<h3 id="the-different-types-of-plugin-functions">The different types of plugin functions</h3>
+<p>Within a plugin, you will typically have two different types of functions, those that retrieve data for retrieval augmented generation (RAG) and those that automate tasks. While each type is functionally the same, they are typically used differently within applications that use Semantic Kernel.</p>
+<p>For example, with retrieval functions, you may want to use strategies to improve performance (e.g., caching and using cheaper intermediate models for summarization). Whereas with task automation functions, you'll likely want to implement human-in-the-loop approval processes to ensure that tasks are completed correctly.</p>
+<p>To learn more about the different types of plugin functions, refer to the following articles:</p>
+<ul>
+<li><a href="using-data-retrieval-functions-for-rag" data-linktype="relative-path">Data retrieval functions</a></li>
+<li><a href="using-task-automation-functions" data-linktype="relative-path">Task automation functions</a></li>
+</ul>
+<h2 id="getting-started-with-plugins">Getting started with plugins</h2>
+<p>Using plugins within Semantic Kernel is always a three step process:</p>
+<ol>
+<li><a href="#1-define-your-plugin" data-linktype="self-bookmark">Define your plugin</a></li>
+<li><a href="#2-add-the-plugin-to-your-kernel" data-linktype="self-bookmark">Add the plugin to your kernel</a></li>
+<li><a href="#3-invoke-the-plugins-functions" data-linktype="self-bookmark">And then either invoke the plugin's functions in either a prompt with function calling</a></li>
+</ol>
+<p>Below we'll provide a high-level example of how to use a plugin within Semantic Kernel. Refer to the links above for more detailed information on how to create and use plugins.</p>
+<h3 id="1-define-your-plugin">1) Define your plugin</h3>
+<p>The easiest way to create a plugin is by defining a class and annotating its methods with the <code>KernelFunction</code> attribute. This let's Semantic Kernel know that this is a function that can be called by an AI or referenced in a prompt.</p>
+<p>You can also import plugins from an <a href="adding-openapi-plugins" data-linktype="relative-path">OpenAPI specification</a>.</p>
+<p>Below, we'll create a plugin that can retrieve the state of lights and alter its state.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>Since most LLM have been trained with Python for function calling, its recommended to use snake case for function names and property names even if you're using the C# or Java SDK.</p>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">using System.ComponentModel;
+using Microsoft.SemanticKernel;
+
+public class LightsPlugin
+{
+   // Mock data for the lights
+   private readonly List&lt;LightModel&gt; lights = new()
+   {
+      new LightModel { Id = 1, Name = "Table Lamp", IsOn = false, Brightness = 100, Hex = "FF0000" },
+      new LightModel { Id = 2, Name = "Porch light", IsOn = false, Brightness = 50, Hex = "00FF00" },
+      new LightModel { Id = 3, Name = "Chandelier", IsOn = true, Brightness = 75, Hex = "0000FF" }
+   };
+
+   [KernelFunction("get_lights")]
+   [Description("Gets a list of lights and their current state")]
+   public async Task&lt;List&lt;LightModel&gt;&gt; GetLightsAsync()
+   {
+      return lights
+   }
+
+   [KernelFunction("get_state")]
+   [Description("Gets the state of a particular light")]
+   public async Task&lt;LightModel?&gt; GetStateAsync([Description("The ID of the light")] int id)
+   {
+      // Get the state of the light with the specified ID
+      return lights.FirstOrDefault(light =&gt; light.Id == id);
+   }
+
+   [KernelFunction("change_state")]
+   [Description("Changes the state of the light")]
+   public async Task&lt;LightModel?&gt; ChangeStateAsync(int id, LightModel LightModel)
+   {
+      var light = lights.FirstOrDefault(light =&gt; light.Id == id);
+
+      if (light == null)
+      {
+         return null;
+      }
+
+      // Update the light with the new state
+      light.IsOn = LightModel.IsOn;
+      light.Brightness = LightModel.Brightness;
+      light.Hex = LightModel.Hex;
+
+      return light;
+   }
+}
+
+public class LightModel
+{
+   [JsonPropertyName("id")]
+   public int Id { get; set; }
+
+   [JsonPropertyName("name")]
+   public string Name { get; set; }
+
+   [JsonPropertyName("is_on")]
+   public bool? IsOn { get; set; }
+
+   [JsonPropertyName("brightness")]
+   public byte? Brightness { get; set; }
+
+   [JsonPropertyName("hex")]
+   public string? Hex { get; set; }
+}
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">from typing import TypedDict, Annotated
+
+class LightModel(TypedDict):
+   id: int
+   name: str
+   is_on: bool | None
+   brightness: int | None
+   hex: str | None
+
+class LightsPlugin:
+   lights: list[LightModel] = [
+      {"id": 1, "name": "Table Lamp", "is_on": False, "brightness": 100, "hex": "FF0000"},
+      {"id": 2, "name": "Porch light", "is_on": False, "brightness": 50, "hex": "00FF00"},
+      {"id": 3, "name": "Chandelier", "is_on": True, "brightness": 75, "hex": "0000FF"},
+   ]
+
+   @kernel_function
+   async def get_lights(self) -&gt; List[LightModel]:
+      """Gets a list of lights and their current state."""
+      return self.lights
+
+   @kernel_function
+   async def get_state(
+      self,
+      id: Annotated[int, "The ID of the light"]
+   ) -&gt; Optional[LightModel]:
+      """Gets the state of a particular light."""
+      for light in self.lights:
+         if light["id"] == id:
+               return light
+      return None
+
+   @kernel_function
+   async def change_state(
+      self,
+      id: Annotated[int, "The ID of the light"],
+      new_state: LightModel
+   ) -&gt; Optional[LightModel]:
+      """Changes the state of the light."""
+      for light in self.lights:
+         if light["id"] == id:
+               light["is_on"] = new_state.get("is_on", light["is_on"])
+               light["brightness"] = new_state.get("brightness", light["brightness"])
+               light["hex"] = new_state.get("hex", light["hex"])
+               return light
+      return None
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<pre><code class="lang-java">public class LightsPlugin {
+
+  // Mock data for the lights
+  private final Map&lt;Integer, LightModel&gt; lights = new HashMap&lt;&gt;();
+
+  public LightsPlugin() {
+    lights.put(1, new LightModel(1, "Table Lamp", false));
+    lights.put(2, new LightModel(2, "Porch light", false));
+    lights.put(3, new LightModel(3, "Chandelier", true));
+  }
+
+  @DefineKernelFunction(name = "get_lights", description = "Gets a list of lights and their current state")
+  public List&lt;LightModel&gt; getLights() {
+    System.out.println("Getting lights");
+    return new ArrayList&lt;&gt;(lights.values());
+  }
+
+  @DefineKernelFunction(name = "change_state", description = "Changes the state of the light")
+  public LightModel changeState(
+      @KernelFunctionParameter(name = "id", description = "The ID of the light to change") int id,
+      @KernelFunctionParameter(name = "isOn", description = "The new state of the light") boolean isOn) {
+    System.out.println("Changing light " + id + " " + isOn);
+    if (!lights.containsKey(id)) {
+      throw new IllegalArgumentException("Light not found");
+    }
+
+    lights.get(id).setIsOn(isOn);
+
+    return lights.get(id);
+  }
+}
+</code></pre>
+</div>
+<p>Notice that we provide descriptions for the function, and parameters. This is important for the AI to understand what the function does and how to use it.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>Don't be afraid to provide detailed descriptions for your functions if an AI is having trouble calling them. Few-shot examples, recommendations for when to use (and not use) the function, and guidance on where to get required parameters can all be helpful.</p>
+</div>
+<h3 id="2-add-the-plugin-to-your-kernel">2) Add the plugin to your kernel</h3>
+<p>Once you've defined your plugin, you can add it to your kernel by creating a new instance of the plugin and adding it to the kernel's plugin collection.</p>
+<p>This example demonstrates the easiest way of adding a class as a plugin with the <code>AddFromType</code> method. To learn about other ways of adding plugins, refer to the <a href="adding-native-plugins" data-linktype="relative-path">adding native plugins</a> article.</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">var builder = new KernelBuilder();
+builder.Plugins.AddFromType&lt;LightsPlugin&gt;("Lights")
+Kernel kernel = builder.Build();
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">kernel = Kernel()
+kernel.add_plugin(
+   LightsPlugin(),
+   plugin_name="Lights",
+)
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<pre><code class="lang-java">// Import the LightsPlugin
+KernelPlugin lightPlugin = KernelPluginFactory.createFromObject(new LightsPlugin(),
+    "LightsPlugin");
+</code></pre>
+<pre><code class="lang-java">// Create a kernel with Azure OpenAI chat completion and plugin
+Kernel kernel = Kernel.builder()
+    .withAIService(ChatCompletionService.class, chatCompletionService)
+    .withPlugin(lightPlugin)
+    .build();
+</code></pre>
+</div>
+<h3 id="3-invoke-the-plugins-functions">3) Invoke the plugin's functions</h3>
+<p>Finally, you can have the AI invoke your plugin's functions by using function calling. Below is an example that demonstrates how to coax the AI to call the <code>get_lights</code> function from the <code>Lights</code> plugin before calling the <code>change_state</code> function to turn on a light.</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+
+// Create a kernel with Azure OpenAI chat completion
+var builder = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
+// Build the kernel
+Kernel kernel = builder.Build();
+var chatCompletionService = kernel.GetRequiredService&lt;IChatCompletionService&gt;();
+
+// Add a plugin (the LightsPlugin class is defined below)
+kernel.Plugins.AddFromType&lt;LightsPlugin&gt;("Lights");
+
+// Enable planning
+OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()&nbsp;
+{
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+};
+
+// Create a history store the conversation
+var history = new ChatHistory();
+history.AddUserMessage("Please turn on the lamp");
+
+// Get the response from the AI
+var result = await chatCompletionService.GetChatMessageContentAsync(
+   history,
+   executionSettings: openAIPromptExecutionSettings,
+   kernel: kernel);
+
+// Print the results
+Console.WriteLine("Assistant &gt; " + result);
+
+// Add the message from the agent to the chat history
+history.AddAssistantMessage(result);
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">import asyncio
+
+from semantic_kernel import Kernel
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureChatPromptExecutionSettings
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.functions import KernelArguments
+
+async def main():
+   # Initialize the kernel
+   kernel = Kernel()
+
+   # Add Azure OpenAI chat completion
+   chat_completion = AzureChatCompletion(
+      deployment_name="your_models_deployment_name",
+      api_key="your_api_key",
+      base_url="your_base_url",
+   )
+   kernel.add_service(chat_completion)
+
+   # Add a plugin (the LightsPlugin class is defined below)
+   kernel.add_plugin(
+      LightsPlugin(),
+      plugin_name="Lights",
+   )
+
+   # Enable planning
+   execution_settings = AzureChatPromptExecutionSettings()
+   execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+
+   # Create a history of the conversation
+   history = ChatHistory()
+   history.add_message("Please turn on the lamp")
+
+   # Get the response from the AI
+   result = await chat_completion.get_chat_message_content(
+      chat_history=history,
+      settings=execution_settings,
+      kernel=kernel,
+   )
+
+   # Print the results
+   print("Assistant &gt; " + str(result))
+
+   # Add the message from the agent to the chat history
+   history.add_message(result)
+
+# Run the main function
+if __name__ == "__main__":
+    asyncio.run(main())
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<pre><code class="lang-java">// Enable planning
+InvocationContext invocationContext = new InvocationContext.Builder()
+    .withReturnMode(InvocationReturnMode.LAST_MESSAGE_ONLY)
+    .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+    .build();
+
+// Create a history to store the conversation
+ChatHistory history = new ChatHistory();
+history.addUserMessage("Turn on light 2");
+
+List&lt;ChatMessageContent&lt;?&gt;&gt; results = chatCompletionService
+    .getChatMessageContentsAsync(history, kernel, invocationContext)
+    .block();
+
+System.out.println("Assistant &gt; " + results.get(0));
+</code></pre>
+</div>
+<p>With the above code, you should get a response that looks like the following:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔵&nbsp;<strong>User</strong></td>
+<td>Please turn on the lamp</td>
+</tr>
+<tr>
+<td>🔴&nbsp;<strong>Assistant&nbsp;(function&nbsp;call)</strong></td>
+<td><code>Lights.get_lights()</code></td>
+</tr>
+<tr>
+<td>🟢&nbsp;<strong>Tool</strong></td>
+<td><code>[{ "id": 1, "name": "Table Lamp", "isOn": false, "brightness": 100, "hex": "FF0000" }, { "id": 2, "name": "Porch light", "isOn": false, "brightness": 50, "hex": "00FF00" }, { "id": 3, "name": "Chandelier", "isOn": true, "brightness": 75, "hex": "0000FF" }]</code></td>
+</tr>
+<tr>
+<td>🔴&nbsp;<strong>Assistant&nbsp;(function&nbsp;call)</strong></td>
+<td>Lights.change_state(1, { "isOn": true })</td>
+</tr>
+<tr>
+<td>🟢&nbsp;<strong>Tool</strong></td>
+<td><code>{ "id": 1, "name": "Table Lamp", "isOn": true, "brightness": 100, "hex": "FF0000" }</code></td>
+</tr>
+<tr>
+<td>🔴&nbsp;<strong>Assistant</strong></td>
+<td>The lamp is now on</td>
+</tr>
+</tbody>
+</table>
+<div class="TIP">
+<p>Tip</p>
+<p>While you can invoke a plugin function directly, this is not advised because the AI should be the one deciding which functions to call. If you need explicit control over which functions are called, consider using standard methods in your codebase instead of plugins.</p>
+</div>
+<h2 id="general-recommendations-for-authoring-plugins">General recommendations for authoring plugins</h2>
+<p>Considering that each scenario has unique requirements, utilizes distinct plugin designs, and may incorporate multiple LLMs, it is challenging to provide a one-size-fits-all guide for plugin design.
+However, below are some general recommendations and guidelines to ensure that plugins are AI-friendly and can be easily and efficiently consumed by LLMs.</p>
+<h3 id="import-only-the-necessary-plugins">Import only the necessary plugins</h3>
+<p>Import only the plugins that contain functions necessary for your specific scenario. This approach will not only reduce the number of input tokens consumed but also minimize the occurrence of function
+miscalls-calls to functions that are not used in the scenario. Overall, this strategy should enhance function-calling accuracy and decrease the number of false positives.</p>
+<p>Additionally, OpenAI recommends that you use no more than 20 tools in a single API call; ideally, no more than 10 tools. As stated by OpenAI: <em>"We recommend that you use no more than
+20 tools in a single API call. Developers typically see a reduction in the model's ability to select the correct tool once they have between 10-20 tools defined."</em>*
+For more information, you can visit their documentation at <a href="https://platform.openai.com/docs/guides/function-calling#keep-the-number-of-functions-low-for-higher-accuracy" data-linktype="external">OpenAI Function Calling Guide</a>.</p>
+<h3 id="make-plugins-ai-friendly">Make plugins AI-friendly</h3>
+<p>To enhance the LLM's ability to understand and utilize plugins, it is recommended to follow these guidelines:</p>
+<ul>
+<li><p><strong>Use descriptive and concise function names:</strong> Ensure that function names clearly convey their purpose to help the model understand when to select each function. If a function name is ambiguous, consider renaming it for clarity.
+Avoid using abbreviations or acronyms to shorten function names. Utilize the <code>DescriptionAttribute</code> to provide additional context and instructions only when necessary, minimizing token consumption.</p>
+</li>
+<li><p><strong>Minimize function parameters:</strong> Limit the number of function parameters and use primitive types whenever possible. This approach reduces token consumption and simplifies the function signature, making it easier for the LLM
+to match function parameters effectively.</p>
+</li>
+<li><p><strong>Name function parameters clearly:</strong> Assign descriptive names to function parameters to clarify their purpose. Avoid using abbreviations or acronyms to shorten parameter names, as this will assist the LLM in reasoning about
+the parameters and providing accurate values. As with function names, use the <code>DescriptionAttribute</code> only when necessary to minimize token consumption.</p>
+</li>
+</ul>
+<h3 id="find-a-right-balance-between-the-number-of-functions-and-their-responsibilities">Find a right balance between the number of functions and their responsibilities</h3>
+<p>On one hand, having functions with a single responsibility is a good practice that allows to keep functions simple and reusable across multiple scenarios. On the other hand, each function call incurs overhead in terms of network round-trip latency
+and the number of consumed input and output tokens: input tokens are used to send the function definition and invocation result to the LLM, while output tokens are consumed when receiving the function call from the model.
+Alternatively, a single function with multiple responsibilities can be implemented to reduce the number of consumed tokens and lower network overhead, although this comes at the cost of reduced reusability in other scenarios.
+<br><br>
+However, consolidating many responsibilities into a single function may increase the number and complexity of function parameters and its return type. This complexity can lead to situations where the model may struggle to correctly match the function parameters,
+resulting in missed parameters or values of incorrect type. Therefore, it is essential to strike the right balance between the number of functions to reduce network overhead and the number of responsibilities each function has, ensuring that the model can accurately
+match function parameters.</p>
+<h3 id="transform-semantic-kernel-functions">Transform Semantic Kernel functions</h3>
+<p>Utilize the transformation techniques for Semantic Kernel functions as described in the <a href="https://devblogs.microsoft.com/semantic-kernel/transforming-semantic-kernel-functions/#:%7E:text=Semantic%20Kernel%20provides%20a%20series,from%20an%20Open%20API%20specification" data-linktype="external">Transforming Semantic Kernel Functions</a> blog post to:</p>
+<ul>
+<li><p><strong>Change function behavior:</strong> There are scenarios where the default behavior of a function may not align with the desired outcome and it's not feasible to modify the original function's implementation. In such cases, you can create a new function that wraps the
+original one and modifies its behavior accordingly.</p>
+</li>
+<li><p><strong>Provide context information:</strong> Functions may require parameters that the LLM cannot or should not infer. For example, if a function needs to act on behalf of the current user or requires authentication information, this context is typically available to the host application but not to the LLM. In such cases, you can transform
+the function to invoke the original one while supplying the necessary context information from the hosting application, along with arguments provided by the LLM.</p>
+</li>
+<li><p><strong>Change parameters list, types, and names:</strong> If the original function has a complex signature that the LLM struggles to interpret, you can transform the function into one with a simpler signature that the LLM can more easily understand.
+This may involve changing parameter names, types, the number of parameters, and flattening or unflattening complex parameters, among other adjustments.</p>
+</li>
+</ul>
+<h3 id="local-state-utilization">Local state utilization</h3>
+<p>When designing plugins that operate on relatively large or confidential datasets, such as documents, articles, or emails containing sensitive information, consider utilizing local state to store original data or intermediate results that do not need to be
+sent to the LLM. Functions for such scenarios can accept and return a state id, allowing you to look up and access the data locally instead of passing the actual data to the LLM, only to receive it back as an argument for the next function invocation.</p>
+<p>By storing data locally, you can keep the information private and secure while avoiding unnecessary token consumption during function calls. This approach not only enhances data privacy but also improves overall efficiency in processing large or sensitive datasets.</p>
+<h3 id="provide-function-return-type-schema-to-ai-model">Provide function return type schema to AI model</h3>
+<p>Use one of the techniques described in the <a href="adding-native-plugins#provide-function-return-type-information-in-function-description" data-linktype="relative-path">Providing functions return type schema to LLM</a> section to provide the function's return type schema to the AI model.</p>
+<p>By utilizing a well-defined return type schema, the AI model can accurately identify the intended properties, eliminating potential inaccuracies that may arise when the model makes assumptions based on incomplete or ambiguous information in the absence of the schema.
+Consequently, this enhances the accuracy of function calls, leading to more reliable and precise outcomes.</p>
+</div>
+					
+		<div
+			id="ms--inline-notifications"
+			class="margin-block-xs"
+			data-bi-name="inline-notification"
+		></div>
+	 
+		<div
+			id="assertive-live-region"
+			role="alert"
+			aria-live="assertive"
+			class="visually-hidden"
+			aria-relevant="additions"
+			aria-atomic="true"
+		></div>
+		<div
+			id="polite-live-region"
+			role="status"
+			aria-live="polite"
+			class="visually-hidden"
+			aria-relevant="additions"
+			aria-atomic="true"
+		></div>
+	
+					
+				</div>
+				
+		<div id="ms--additional-resources-mobile" class="display-none-print">
+			<hr class="hr" hidden />
+			<h2 id="ms--additional-resources-mobile-heading" class="title is-3" hidden>
+				Additional resources
+			</h2>
+			
+		<section
+			id="right-rail-recommendations-mobile"
+			class=""
+			data-bi-name="recommendations"
+			hidden
+		></section>
+	 
+		<section
+			id="right-rail-training-mobile"
+			class=""
+			data-bi-name="learning-resource-card"
+			hidden
+		></section>
+	 
+		<section
+			id="right-rail-events-mobile"
+			class=""
+			data-bi-name="events-card"
+			hidden
+		></section>
+	 
+		<section
+			id="right-rail-qna-mobile"
+			class="margin-top-xxs"
+			data-bi-name="qna-link-card"
+			hidden
+		></section>
+	
+		</div>
+	 
+		<div
+			id="article-metadata-footer"
+			data-bi-name="article-metadata-footer"
+			data-test-id="article-metadata-footer"
+			class="page-metadata-container"
+		>
+			<hr class="hr" />
+			<ul class="metadata page-metadata" data-bi-name="page info" lang="en-us" dir="ltr">
+				<li class="visibility-hidden-visual-diff">
+			<span class="badge badge-sm text-wrap-pretty">
+				<span>Last updated on <local-time format="twoDigitNumeric"
+		datetime="2024-12-10T19:15:00.000Z"
+		data-article-date-source="calculated"
+		class="is-invisible"
+	>
+		2024-12-10
+	</local-time></span>
+			</span>
+		</li>
+			</ul>
+		</div>
+	
+			</div>
+			
+		<div
+			id="action-panel"
+			role="region"
+			aria-label="Action Panel"
+			class="action-panel"
+			tabindex="-1"
+		></div>
+	
+		
+				</main>
+				<aside
+					id="layout-body-aside"
+					class="layout-body-aside "
+					data-bi-name="aside"
+			  >
+					
+		<div
+			id="ms--additional-resources"
+			class="right-container padding-sm display-none display-block-desktop height-full"
+			data-bi-name="pageactions"
+			role="complementary"
+			aria-label="Additional resources"
+		>
+			<div id="affixed-right-container" data-bi-name="right-column">
+				
+		<nav
+			id="side-doc-outline"
+			class="doc-outline border-bottom padding-bottom-xs margin-bottom-xs"
+			data-bi-name="intopic toc"
+			aria-label="In this article"
+		>
+			<h3>In this article</h3>
+		</nav>
+	
+				<!-- Feedback -->
+				
+			</div>
+		</div>
+	
+			  </aside> <section
+					id="layout-body-flyout"
+					class="layout-body-flyout "
+					data-bi-name="flyout"
+			  >
+					 <div
+	class="height-full border-left background-color-body-medium"
+	id="ask-learn-flyout"
+></div>
+			  </section> <div class="layout-body-footer " data-bi-name="layout-footer">
+		<footer
+			id="footer"
+			data-test-id="footer"
+			data-bi-name="footer"
+			class="footer-layout has-padding has-default-focus border-top  uhf-container"
+			role="contentinfo"
+		>
+			<div class="display-flex gap-xs flex-wrap-wrap is-full-height padding-right-lg-desktop">
+				
+		<a
+			data-mscc-ic="false"
+			href="#"
+			data-bi-name="select-locale"
+			class="locale-selector-link flex-shrink-0 button button-sm button-clear external-link-indicator"
+			id=""
+			title=""
+			><span class="icon" aria-hidden="true"
+				><span class="docon docon-world"></span></span
+			><span class="local-selector-link-text">en-us</span></a
+		>
+	 <div class="ccpa-privacy-link" data-ccpa-privacy-link hidden>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://aka.ms/yourcaliforniaprivacychoices"
+			data-bi-name="your-privacy-choices"
+			class="button button-sm button-clear flex-shrink-0 external-link-indicator"
+			id=""
+			title=""
+			>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 30 14"
+			xml:space="preserve"
+			height="16"
+			width="43"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<path
+				d="M7.4 12.8h6.8l3.1-11.6H7.4C4.2 1.2 1.6 3.8 1.6 7s2.6 5.8 5.8 5.8z"
+				style="fill-rule:evenodd;clip-rule:evenodd;fill:#fff"
+			></path>
+			<path
+				d="M22.6 0H7.4c-3.9 0-7 3.1-7 7s3.1 7 7 7h15.2c3.9 0 7-3.1 7-7s-3.2-7-7-7zm-21 7c0-3.2 2.6-5.8 5.8-5.8h9.9l-3.1 11.6H7.4c-3.2 0-5.8-2.6-5.8-5.8z"
+				style="fill-rule:evenodd;clip-rule:evenodd;fill:#06f"
+			></path>
+			<path
+				d="M24.6 4c.2.2.2.6 0 .8L22.5 7l2.2 2.2c.2.2.2.6 0 .8-.2.2-.6.2-.8 0l-2.2-2.2-2.2 2.2c-.2.2-.6.2-.8 0-.2-.2-.2-.6 0-.8L20.8 7l-2.2-2.2c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0l2.2 2.2L23.8 4c.2-.2.6-.2.8 0z"
+				style="fill:#fff"
+			></path>
+			<path
+				d="M12.7 4.1c.2.2.3.6.1.8L8.6 9.8c-.1.1-.2.2-.3.2-.2.1-.5.1-.7-.1L5.4 7.7c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0L8 8.6l3.8-4.5c.2-.2.6-.2.9 0z"
+				style="fill:#06f"
+			></path>
+		</svg>
+	
+			<span>Your Privacy Choices</span></a
+		>
+	
+	</div>
+				<div class="flex-shrink-0">
+		<div class="dropdown has-caret-up">
+			<button
+				data-test-id="theme-selector-button"
+				class="dropdown-trigger button button-clear button-sm inner-focus theme-dropdown-trigger"
+				aria-controls="{{ themeMenuId }}"
+				aria-expanded="false"
+				title="Theme"
+				data-bi-name="theme"
+			>
+				<span class="icon">
+					<span class="docon docon-sun" aria-hidden="true"></span>
+				</span>
+				<span>Theme</span>
+				<span class="icon expanded-indicator" aria-hidden="true">
+					<span class="docon docon-chevron-down-light"></span>
+				</span>
+			</button>
+			<div class="dropdown-menu" id="{{ themeMenuId }}" role="menu">
+				<ul class="theme-selector padding-xxs" data-test-id="theme-dropdown-menu">
+					<li class="theme display-block">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							data-theme-to="light"
+						>
+							<span class="theme-light margin-right-xxs">
+								<span
+									class="theme-selector-icon border display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span role="menuitem"> Light </span>
+						</button>
+					</li>
+					<li class="theme display-block">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							data-theme-to="dark"
+						>
+							<span class="theme-dark margin-right-xxs">
+								<span
+									class="border theme-selector-icon display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span role="menuitem"> Dark </span>
+						</button>
+					</li>
+					<li class="theme display-block">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							data-theme-to="high-contrast"
+						>
+							<span class="theme-high-contrast margin-right-xxs">
+								<span
+									class="border theme-selector-icon display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span role="menuitem"> High contrast </span>
+						</button>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+			</div>
+			<ul class="links" data-bi-name="footerlinks">
+				<li class="manage-cookies-holder" hidden=""></li>
+				<li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/principles-for-ai-generated-content"
+			data-bi-name="aiDisclaimer"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>AI Disclaimer</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/previous-versions/"
+			data-bi-name="archivelink"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Previous Versions</a
+		>
+	
+	</li> <li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://techcommunity.microsoft.com/t5/microsoft-learn-blog/bg-p/MicrosoftLearnBlog"
+			data-bi-name="bloglink"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Blog</a
+		>
+	
+	</li> <li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/contribute"
+			data-bi-name="contributorGuide"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Contribute</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://go.microsoft.com/fwlink/?LinkId=521839"
+			data-bi-name="privacy"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Privacy</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/legal/termsofuse"
+			data-bi-name="termsofuse"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Terms of Use</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://www.microsoft.com/legal/intellectualproperty/Trademarks/"
+			data-bi-name="trademarks"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Trademarks</a
+		>
+	
+	</li>
+				<li>&copy; Microsoft 2026</li>
+			</ul>
+		</footer>
+	</footer>
+			</body>
+		</html>

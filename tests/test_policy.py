@@ -28,6 +28,24 @@ class PolicyEngineTests(unittest.TestCase):
             approval_token="approved-token",
         )
 
+    def test_canonical_analysis_mode_blocks_mutation(self) -> None:
+        with self.assertRaises(PolicyDeniedError) as ctx:
+            self.engine.enforce(
+                mode="ai_analysis",
+                is_mutation=True,
+                approval_token=None,
+            )
+        self.assertIn("Mutations are denied", str(ctx.exception))
+
+    def test_canonical_approved_mode_allows_mutation(self) -> None:
+        decision = self.engine.enforce(
+            mode="ai_mutation_approved",
+            is_mutation=True,
+            approval_token="approved-token",
+        )
+        self.assertTrue(decision.allowed)
+        self.assertEqual(decision.canonical_mode, "ai_mutation_approved")
+
 
 if __name__ == "__main__":
     unittest.main()

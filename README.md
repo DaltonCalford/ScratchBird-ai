@@ -55,6 +55,7 @@ pip install -e ".[mcp]"
 ```bash
 PYTHONPATH=src python -m unittest discover -s tests -p 'test_*.py'
 PYTHONPATH=src tools/smoke_http_contract.py --mode selftest
+python tools/validate_evidence_gates.py --repo-root .
 ```
 
 ### 4. Run Bridge
@@ -87,8 +88,25 @@ PYTHONPATH=src tools/run_local_stack.sh
 - `SCRATCHBIRD_AI_BRIDGE_DIALECTS`: enabled dialect CSV (default `native`)
 - `SCRATCHBIRD_AI_BRIDGE_DEFAULT_DSN`: fallback DSN for enabled dialects
 - `SCRATCHBIRD_AI_BRIDGE_DSN_<DIALECT>`: per-dialect DSN override
+- `SCRATCHBIRD_AI_BRIDGE_SERVER_SETUP`: `listener-only`, `managed`, `ipc-only`, or `embedded` (default `listener-only`)
+- `SCRATCHBIRD_AI_BRIDGE_TRANSPORT_MODE`: explicit transport override (`inet_listener`, `managed`, `local_ipc`, `embedded`)
+- `SCRATCHBIRD_AI_BRIDGE_FRONT_DOOR_MODE`: explicit front-door override (`direct`, `manager_proxy`)
+- `SCRATCHBIRD_AI_BRIDGE_IPC_METHOD`: IPC method override (`auto`, `unix`, `pipe`, `tcp`)
+- `SCRATCHBIRD_AI_BRIDGE_IPC_PATH`: IPC socket/pipe path override for `ipc-only`
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_TOKEN` / `SCRATCHBIRD_AI_BRIDGE_MCP_AUTH_TOKEN`: managed signon token
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_USERNAME` / `SCRATCHBIRD_AI_BRIDGE_MCP_USERNAME`: managed username override
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_DATABASE` / `SCRATCHBIRD_AI_BRIDGE_MCP_DATABASE`: managed database override
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_CONNECTION_PROFILE` / `SCRATCHBIRD_AI_BRIDGE_MCP_CONNECTION_PROFILE`: managed connection profile (default `native_v3`)
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_CLIENT_INTENT` / `SCRATCHBIRD_AI_BRIDGE_MCP_CLIENT_INTENT`: managed client intent (default `native_v3`)
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_CLIENT_FLAGS` / `SCRATCHBIRD_AI_BRIDGE_MCP_CLIENT_FLAGS`: managed client flags (`0..65535`)
+- `SCRATCHBIRD_AI_BRIDGE_MANAGER_AUTH_FAST_PATH` / `SCRATCHBIRD_AI_BRIDGE_MCP_AUTH_FAST_PATH`: managed fast-path auth toggle (default `true`)
 - `SCRATCHBIRD_AI_BRIDGE_PYTHON_DRIVER_SRC`: path to ScratchBird Python driver `src/`
 - `SCRATCHBIRD_AI_BRIDGE_STRICT_COMPILE`: fail compile endpoint if compile probe fails
+
+Connection-mode note:
+
+- `ScratchBird-ai` now forwards mode-aware transport/signon options to the driver.
+- `ipc-only` and `embedded` require a Python driver/runtime that supports those transport modes.
 
 Reference example:
 
@@ -97,6 +115,7 @@ Reference example:
 ## Repository Layout
 
 - `docs/` - release, status, planning, specification, and reference documentation
+- `artifacts/` - AI conformance proof artifacts used for release gating
 - `src/` - package source (`scratchbird_ai`)
 - `tests/` - unit and integration tests
 - `examples/` - runtime configuration examples

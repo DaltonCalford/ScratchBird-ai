@@ -1,0 +1,2 @@
+FAIL milvus_hybrid_search.md  https://docs.milvus.io/docs/hybrid_search_with_milvus.md
+FAIL milvus_sparse_vector.md  https://docs.milvus.io/docs/sparse_vector.md

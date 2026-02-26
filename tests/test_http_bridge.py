@@ -8,8 +8,10 @@ from urllib import error, request
 
 from scratchbird_ai.http_bridge import (
     BridgeCompileResult,
+    BridgeError,
     BridgeExecuteResult,
     BridgeSettings,
+    ScratchBirdDriverBackend,
     ScratchBirdBridgeApp,
     build_http_server,
 )
@@ -192,6 +194,189 @@ class HttpBridgeTests(unittest.TestCase):
         self.assertIn("error", doc)
         self.assertIn("Unsupported dialect", doc["error"]["message"])
         self.assertIn("native", doc["error"]["message"])
+
+
+class BridgeConnectionSettingsTests(unittest.TestCase):
+    def test_listener_only_setup_maps_to_direct_listener(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="listener-only",
+        )
+        kwargs = settings.resolve_connect_kwargs("native")
+        self.assertEqual(kwargs["dsn"], "scratchbird://user:pass@127.0.0.1:3092/main")
+        self.assertEqual(kwargs["protocol"], "native")
+        self.assertEqual(kwargs["transport_mode"], "inet_listener")
+        self.assertEqual(kwargs["front_door_mode"], "direct")
+
+    def test_managed_setup_maps_to_manager_proxy_and_includes_manager_fields(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="managed",
+            manager_auth_token="token123",
+            manager_username="admin",
+            manager_database="main",
+            manager_connection_profile="native_v3",
+            manager_client_intent="native_v3",
+            manager_client_flags=7,
+            manager_auth_fast_path=False,
+        )
+        kwargs = settings.resolve_connect_kwargs("native")
+        self.assertEqual(kwargs["transport_mode"], "managed")
+        self.assertEqual(kwargs["front_door_mode"], "manager_proxy")
+        self.assertEqual(kwargs["manager_auth_token"], "token123")
+        self.assertEqual(kwargs["manager_username"], "admin")
+        self.assertEqual(kwargs["manager_database"], "main")
+        self.assertEqual(kwargs["manager_connection_profile"], "native_v3")
+        self.assertEqual(kwargs["manager_client_intent"], "native_v3")
+        self.assertEqual(kwargs["manager_client_flags"], 7)
+        self.assertFalse(kwargs["manager_auth_fast_path"])
+
+    def test_managed_setup_requires_manager_token(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="managed",
+        )
+        with self.assertRaisesRegex(BridgeError, "manager_auth_token"):
+            settings.resolve_connect_kwargs("native")
+
+    def test_managed_setup_accepts_manager_token_from_dsn(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main?manager_auth_token=abc123",
+            server_setup="managed",
+        )
+        kwargs = settings.resolve_connect_kwargs("native")
+        self.assertEqual(kwargs["transport_mode"], "managed")
+        self.assertEqual(kwargs["front_door_mode"], "manager_proxy")
+
+    def test_front_door_manager_proxy_forces_managed_transport(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="listener-only",
+            front_door_mode="managed",
+            manager_auth_token="abc123",
+        )
+        kwargs = settings.resolve_connect_kwargs("native")
+        self.assertEqual(kwargs["front_door_mode"], "manager_proxy")
+        self.assertEqual(kwargs["transport_mode"], "managed")
+
+    def test_ipc_and_embedded_setup_mapping(self) -> None:
+        ipc_settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="ipc-only",
+            ipc_method="unix",
+            ipc_path="/tmp/scratchbird-main.sock",
+        )
+        ipc_kwargs = ipc_settings.resolve_connect_kwargs("native")
+        self.assertEqual(ipc_kwargs["transport_mode"], "local_ipc")
+        self.assertEqual(ipc_kwargs["front_door_mode"], "direct")
+        self.assertEqual(ipc_kwargs["ipc_method"], "unix")
+        self.assertEqual(ipc_kwargs["ipc_path"], "/tmp/scratchbird-main.sock")
+
+        embedded_settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="embedded",
+        )
+        embedded_kwargs = embedded_settings.resolve_connect_kwargs("native")
+        self.assertEqual(embedded_kwargs["transport_mode"], "embedded")
+        self.assertEqual(embedded_kwargs["front_door_mode"], "direct")
+        self.assertFalse(embedded_kwargs["shared"])
+        self.assertEqual(embedded_kwargs["connection_scope"], "private")
+        self.assertTrue(embedded_kwargs["embedded_single_connection"])
+
+    def test_auth_plugin_connect_kwargs_are_forwarded(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="listener-only",
+            auth_method_id="scratchbird.auth.proxy_assertion",
+            auth_method_payload="assertion.jwt",
+            auth_payload_json='{"principal":"proxy"}',
+            auth_payload_b64="cHJveHk=",
+            auth_provider_profile="corp_ldap_primary",
+            auth_required_methods=("scratchbird.auth.proxy_assertion",),
+            auth_forbidden_methods=("scratchbird.auth.password_compat",),
+            auth_require_channel_binding=True,
+            workload_identity_token="workload.jwt",
+            proxy_principal_assertion="proxy.jwt",
+            ldap_bind_dn="uid=alice,ou=people,dc=example,dc=com",
+            kerberos_spn="postgres/db.internal@EXAMPLE.COM",
+            radius_username="ops_user",
+            pam_service="scratchbird-login",
+        )
+        kwargs = settings.resolve_connect_kwargs("native")
+        self.assertEqual(kwargs["auth_method_id"], "scratchbird.auth.proxy_assertion")
+        self.assertEqual(kwargs["auth_method_payload"], "assertion.jwt")
+        self.assertEqual(kwargs["auth_payload_json"], '{"principal":"proxy"}')
+        self.assertEqual(kwargs["auth_payload_b64"], "cHJveHk=")
+        self.assertEqual(kwargs["auth_provider_profile"], "corp_ldap_primary")
+        self.assertEqual(kwargs["auth_required_methods"], ["scratchbird.auth.proxy_assertion"])
+        self.assertEqual(kwargs["auth_forbidden_methods"], ["scratchbird.auth.password_compat"])
+        self.assertTrue(kwargs["auth_require_channel_binding"])
+        self.assertEqual(kwargs["workload_identity_token"], "workload.jwt")
+        self.assertEqual(kwargs["proxy_principal_assertion"], "proxy.jwt")
+        self.assertEqual(kwargs["ldap_bind_dn"], "uid=alice,ou=people,dc=example,dc=com")
+        self.assertEqual(kwargs["kerberos_spn"], "postgres/db.internal@EXAMPLE.COM")
+        self.assertEqual(kwargs["radius_username"], "ops_user")
+        self.assertEqual(kwargs["pam_service"], "scratchbird-login")
+
+    def test_rejects_overlapping_auth_pinning_methods(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            auth_required_methods=("scratchbird.auth.scram_sha_256",),
+            auth_forbidden_methods=("scratchbird.auth.scram_sha_256",),
+        )
+        with self.assertRaisesRegex(BridgeError, "required and forbidden"):
+            settings.resolve_connect_kwargs("native")
+
+
+class DriverConnectWiringTests(unittest.TestCase):
+    class _FakeConnection:
+        def close(self) -> None:
+            return
+
+    class _FakeScratchBirdModule:
+        def __init__(self) -> None:
+            self.last_kwargs: dict[str, Any] | None = None
+
+        def connect(self, **kwargs: Any) -> "DriverConnectWiringTests._FakeConnection":
+            self.last_kwargs = kwargs
+            return DriverConnectWiringTests._FakeConnection()
+
+    def test_backend_connect_uses_resolved_kwargs(self) -> None:
+        settings = BridgeSettings(
+            enabled_dialects=("native",),
+            default_dsn="scratchbird://user:pass@127.0.0.1:3092/main",
+            server_setup="managed",
+            manager_auth_token="token123",
+            manager_client_flags=3,
+            auth_required_methods=("scratchbird.auth.scram_sha_256",),
+        )
+
+        backend = object.__new__(ScratchBirdDriverBackend)
+        backend.settings = settings
+        fake_driver = self._FakeScratchBirdModule()
+        backend._scratchbird = fake_driver
+        backend._protocol = None
+
+        conn = backend._connect("native")
+        try:
+            self.assertIsNotNone(fake_driver.last_kwargs)
+            kwargs = fake_driver.last_kwargs or {}
+            self.assertEqual(kwargs["transport_mode"], "managed")
+            self.assertEqual(kwargs["front_door_mode"], "manager_proxy")
+            self.assertEqual(kwargs["manager_auth_token"], "token123")
+            self.assertEqual(kwargs["manager_client_flags"], 3)
+            self.assertEqual(kwargs["auth_required_methods"], ["scratchbird.auth.scram_sha_256"])
+        finally:
+            conn.close()
 
 
 if __name__ == "__main__":

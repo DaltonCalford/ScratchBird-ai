@@ -1,0 +1,1961 @@
+ <!DOCTYPE html>
+		<html
+			class="layout layout-holy-grail   show-table-of-contents conceptual show-breadcrumb default-focus"
+			lang="en-us"
+			dir="ltr"
+			data-authenticated="false"
+			data-auth-status-determined="false"
+			data-target="docs"
+			x-ms-format-detection="none"
+		>
+			
+		<head>
+			<title>Function calling with chat completion | Microsoft Learn</title>
+			<meta charset="utf-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<meta name="color-scheme" content="light dark" />
+
+			<meta name="description" content="Learn how function calling works and how to optimize your code for the best performance." />
+			<link rel="canonical" href="https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/function-calling/" /> 
+
+			<!-- Non-customizable open graph and sharing-related metadata -->
+			<meta name="twitter:card" content="summary_large_image" />
+			<meta name="twitter:site" content="@MicrosoftLearn" />
+			<meta property="og:type" content="website" />
+			<meta property="og:image:alt" content="Microsoft Learn" />
+			<meta property="og:image" content="https://learn.microsoft.com/en-us/media/open-graph-image.png" />
+			<!-- Page specific open graph and sharing-related metadata -->
+			<meta property="og:title" content="Function calling with chat completion" />
+			<meta property="og:url" content="https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/function-calling/" />
+			<meta property="og:description" content="Learn how function calling works and how to optimize your code for the best performance." />
+			<meta name="platform_id" content="1858ef1b-803f-2bce-e496-d7d54b91c988" /> 
+			<meta name="locale" content="en-us" />
+			 <meta name="adobe-target" content="true" /> 
+			<meta name="uhfHeaderId" content="MSDocsHeader-SemanticKernel" />
+
+			<meta name="page_type" content="conceptual" />
+
+			<!--page specific meta tags-->
+			
+
+			<!-- custom meta tags -->
+			
+		<meta name="zone_pivot_group_filename:" content="zone_pivot_group.json" />
+	
+		<meta name="breadcrumb_path" content="/semantic-kernel/breadcrumb/toc.json" />
+	
+		<meta name="feedback_system" content="None" />
+	
+		<meta name="zone_pivot_groups" content="programming-languages" />
+	
+		<meta name="author" content="moonbox3" />
+	
+		<meta name="ms.topic" content="conceptual" />
+	
+		<meta name="ms.author" content="evmattso" />
+	
+		<meta name="ms.date" content="2023-07-12T00:00:00Z" />
+	
+		<meta name="ms.service" content="semantic-kernel" />
+	
+		<meta name="document_id" content="424fba61-7c70-1600-087f-b75a6aa50fed" />
+	
+		<meta name="document_version_independent_id" content="424fba61-7c70-1600-087f-b75a6aa50fed" />
+	
+		<meta name="updated_at" content="2025-07-01T05:09:00Z" />
+	
+		<meta name="original_content_git_url" content="https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/live/semantic-kernel/concepts/ai-services/chat-completion/function-calling/index.md" />
+	
+		<meta name="gitcommit" content="https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/f655e4e8a189d831a79c21f2984c88ef9f595b74/semantic-kernel/concepts/ai-services/chat-completion/function-calling/index.md" />
+	
+		<meta name="git_commit_id" content="f655e4e8a189d831a79c21f2984c88ef9f595b74" />
+	
+		<meta name="site_name" content="Docs" />
+	
+		<meta name="depot_name" content="MSDN.semantic-kernel" />
+	
+		<meta name="schema" content="Conceptual" />
+	
+		<meta name="toc_rel" content="../../../../toc.json" />
+	
+		<meta name="feedback_product_url" content="" />
+	
+		<meta name="feedback_help_link_type" content="" />
+	
+		<meta name="feedback_help_link_url" content="" />
+	
+		<meta name="word_count" content="4295" />
+	
+		<meta name="asset_id" content="concepts/ai-services/chat-completion/function-calling/index" />
+	
+		<meta name="moniker_range_name" content="" />
+	
+		<meta name="item_type" content="Content" />
+	
+		<meta name="source_path" content="semantic-kernel/concepts/ai-services/chat-completion/function-calling/index.md" />
+	
+		<meta name="previous_tlsh_hash" content="1F7BE172530D6700DB830E69483BB94417F460986BB0AFF8162775F1E18B7EE327516C96A70F73843332516721B2BA0F52EDE23D81AD2371549298B9C1A81E669BDC3B7EDC" />
+	
+		<meta name="github_feedback_content_git_url" content="https://github.com/MicrosoftDocs/semantic-kernel-docs/blob/main/semantic-kernel/concepts/ai-services/chat-completion/function-calling/index.md" />
+	
+		<meta name="markdown_url" content="https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/function-calling/?accept=text/markdown" />
+	 
+		<meta name="cmProducts" content="https://authoring-docs-microsoft.poolparty.biz/devrel/540ac133-a371-4dbb-8f94-28d6cc77a70b" data-source="generated" />
+	
+		<meta name="spProducts" content="https://authoring-docs-microsoft.poolparty.biz/devrel/60bfc045-f127-4841-9d00-ea35495a5800" data-source="generated" />
+	
+
+			<!-- assets and js globals -->
+			
+			<link rel="stylesheet" href="/static/assets/0.4.03336.7510-899cc417/styles/site-ltr.css" />
+			
+			<link rel="preconnect" href="//mscom.demdex.net" crossorigin />
+						<link rel="dns-prefetch" href="//target.microsoft.com" />
+						<link rel="dns-prefetch" href="//microsoftmscompoc.tt.omtrdc.net" />
+						<link
+							rel="preload"
+							as="script"
+							href="/static/third-party/adobe-target/at-js/2.9.0/at.js"
+							integrity="sha384-l4AKhsU8cUWSht4SaJU5JWcHEWh1m4UTqL08s6b/hqBLAeIDxTNl+AMSxTLx6YMI"
+							crossorigin="anonymous"
+							id="adobe-target-script"
+							type="application/javascript"
+						/>
+			<script src="https://wcpstatic.microsoft.com/mscc/lib/v2/wcp-consent.js"></script>
+			<script src="https://js.monitor.azure.com/scripts/c/ms.jsll-4.min.js"></script>
+			<script src="/_themes/docs.theme/master/en-us/_themes/global/deprecation.js"></script>
+
+			<!-- msdocs global object -->
+			<script id="msdocs-script">
+		var msDocs = {
+  "environment": {
+    "accessLevel": "online",
+    "azurePortalHostname": "portal.azure.com",
+    "reviewFeatures": false,
+    "supportLevel": "production",
+    "systemContent": true,
+    "siteName": "learn",
+    "legacyHosting": false
+  },
+  "data": {
+    "contentLocale": "en-us",
+    "contentDir": "ltr",
+    "userLocale": "en-us",
+    "userDir": "ltr",
+    "pageTemplate": "Conceptual",
+    "brand": "",
+    "context": {},
+    "standardFeedback": false,
+    "showFeedbackReport": false,
+    "feedbackHelpLinkType": "",
+    "feedbackHelpLinkUrl": "",
+    "feedbackSystem": "None",
+    "feedbackGitHubRepo": "",
+    "feedbackProductUrl": "",
+    "extendBreadcrumb": false,
+    "isEditDisplayable": false,
+    "isPrivateUnauthorized": false,
+    "hideViewSource": false,
+    "isPermissioned": false,
+    "hasRecommendations": true,
+    "contributors": [
+      {
+        "name": "moonbox3",
+        "url": "https://github.com/moonbox3"
+      },
+      {
+        "name": "sophialagerkranspandey",
+        "url": "https://github.com/sophialagerkranspandey"
+      },
+      {
+        "name": "eavanvalkenburg",
+        "url": "https://github.com/eavanvalkenburg"
+      },
+      {
+        "name": "TaoChenOSU",
+        "url": "https://github.com/TaoChenOSU"
+      },
+      {
+        "name": "SergeyMenshykh",
+        "url": "https://github.com/SergeyMenshykh"
+      }
+    ]
+  },
+  "functions": {}
+};;
+	</script>
+
+			<!-- base scripts, msdocs global should be before this -->
+			<script src="/static/assets/0.4.03336.7510-899cc417/scripts/en-us/index-docs.js"></script>
+			
+
+			<!-- json-ld -->
+			
+		</head>
+	
+			<body
+				id="body"
+				data-bi-name="body"
+				class="layout-body "
+				lang="en-us"
+				dir="ltr"
+			>
+				<header class="layout-body-header">
+		<div class="header-holder has-default-focus">
+			
+		<a
+			href="#main"
+			
+			style="z-index: 1070"
+			class="outline-color-text visually-hidden-until-focused position-fixed inner-focus focus-visible top-0 left-0 right-0 padding-xs text-align-center background-color-body"
+			
+		>
+			Skip to main content
+		</a>
+	
+		<a
+			href="#"
+			data-skip-to-ask-learn
+			style="z-index: 1070"
+			class="outline-color-text visually-hidden-until-focused position-fixed inner-focus focus-visible top-0 left-0 right-0 padding-xs text-align-center background-color-body"
+			hidden
+		>
+			Skip to Ask Learn chat experience
+		</a>
+	
+
+			<div hidden id="cookie-consent-holder" data-test-id="cookie-consent-container"></div>
+			<!-- Unsupported browser warning -->
+			<div
+				id="unsupported-browser"
+				style="background-color: white; color: black; padding: 16px; border-bottom: 1px solid grey;"
+				hidden
+			>
+				<div style="max-width: 800px; margin: 0 auto;">
+					<p style="font-size: 24px">This browser is no longer supported.</p>
+					<p style="font-size: 16px; margin-top: 16px;">
+						Upgrade to Microsoft Edge to take advantage of the latest features, security updates, and technical support.
+					</p>
+					<div style="margin-top: 12px;">
+						<a
+							href="https://go.microsoft.com/fwlink/p/?LinkID=2092881 "
+							style="background-color: #0078d4; border: 1px solid #0078d4; color: white; padding: 6px 12px; border-radius: 2px; display: inline-block;"
+						>
+							Download Microsoft Edge
+						</a>
+						<a
+							href="https://learn.microsoft.com/en-us/lifecycle/faq/internet-explorer-microsoft-edge"
+							style="background-color: white; padding: 6px 12px; border: 1px solid #505050; color: #171717; border-radius: 2px; display: inline-block;"
+						>
+							More info about Internet Explorer and Microsoft Edge
+						</a>
+					</div>
+				</div>
+			</div>
+			<!-- site header -->
+			<header
+				id="ms--site-header"
+				data-test-id="site-header-wrapper"
+				role="banner"
+				itemscope="itemscope"
+				itemtype="http://schema.org/Organization"
+			>
+				<div
+					id="ms--mobile-nav"
+					class="site-header display-none-tablet padding-inline-none gap-none"
+					data-bi-name="mobile-header"
+					data-test-id="mobile-header"
+				></div>
+				<div
+					id="ms--primary-nav"
+					class="site-header display-none display-flex-tablet"
+					data-bi-name="L1-header"
+					data-test-id="primary-header"
+				></div>
+				<div
+					id="ms--secondary-nav"
+					class="site-header display-none display-flex-tablet"
+					data-bi-name="L2-header"
+					data-test-id="secondary-header"
+					
+				></div>
+			</header>
+			
+		<!-- banner -->
+		<div data-banner>
+			<div id="disclaimer-holder"></div>
+			
+		</div>
+		<!-- banner end -->
+	
+		</div>
+	</header>
+				 <section
+					id="layout-body-menu"
+					class="layout-body-menu display-flex"
+					data-bi-name="menu"
+			  >
+					
+		<div
+			id="left-container"
+			class="left-container display-none display-block-tablet padding-inline-sm padding-bottom-sm width-full"
+			data-toc-container="true"
+		>
+			<!-- Regular TOC content (default) -->
+			<div id="ms--toc-content" class="height-full">
+				<nav
+					id="affixed-left-container"
+					class="margin-top-sm-tablet position-sticky display-flex flex-direction-column"
+					aria-label="Primary"
+					data-bi-name="left-toc"
+					role="navigation"
+				></nav>
+			</div>
+			<!-- Collapsible TOC content (hidden by default) -->
+			<div id="ms--toc-content-collapsible" class="height-full" hidden>
+				<nav
+					id="affixed-left-container"
+					class="margin-top-sm-tablet position-sticky display-flex flex-direction-column"
+					aria-label="Primary"
+					data-bi-name="left-toc"
+					role="navigation"
+				>
+					<div
+						id="ms--collapsible-toc-header"
+						class="display-flex flex-direction-row-reverse justify-content-space-between align-items-center margin-bottom-xxs"
+					>
+						<button
+							type="button"
+							class="button button-clear inner-focus"
+							data-collapsible-toc-toggle
+							aria-expanded="true"
+							aria-controls="ms--collapsible-toc-content"
+							aria-label="Table of contents"
+						>
+							<span class="icon font-size-h4" aria-hidden="true">
+								<span class="docon docon-panel-left-contract"></span>
+							</span>
+						</button>
+						<div id="ms--collapsible-toc-moniker-slot" class="flex-grow-1"></div>
+					</div>
+				</nav>
+			</div>
+		</div>
+	
+			  </section>
+
+				<main
+					id="main"
+					role="main"
+					class="layout-body-main "
+					data-bi-name="content"
+					lang="en-us"
+					dir="ltr"
+				>
+					
+			<div
+		id="ms--content-header"
+		class="content-header default-focus border-bottom-none"
+		data-bi-name="content-header"
+	>
+		<div class="content-header-controls margin-xxs margin-inline-sm-tablet">
+			<button
+				type="button"
+				class="contents-button button button-sm margin-right-xxs"
+				data-bi-name="contents-expand"
+				aria-haspopup="true"
+				data-contents-button
+			>
+				<span class="icon" aria-hidden="true"><span class="docon docon-menu"></span></span>
+				<span class="contents-expand-title"> Table of contents </span>
+			</button>
+			<button
+				type="button"
+				class="ap-collapse-behavior ap-expanded button button-sm"
+				data-bi-name="ap-collapse"
+				aria-controls="action-panel"
+			>
+				<span class="icon" aria-hidden="true"><span class="docon docon-exit-mode"></span></span>
+				<span>Exit editor mode</span>
+			</button>
+		</div>
+	</div>
+			<div data-main-column class="padding-sm padding-top-none padding-top-sm-tablet">
+				<div>
+					
+		<div id="article-header" class="background-color-body margin-bottom-xs display-none-print">
+			<div class="display-flex align-items-center justify-content-space-between">
+				
+		<details
+			id="article-header-breadcrumbs-overflow-popover"
+			class="popover"
+			data-for="article-header-breadcrumbs"
+		>
+			<summary
+				class="button button-clear button-primary button-sm inner-focus"
+				aria-label="All breadcrumbs"
+			>
+				<span class="icon">
+					<span class="docon docon-more"></span>
+				</span>
+			</summary>
+			<div id="article-header-breadcrumbs-overflow" class="popover-content padding-none"></div>
+		</details>
+
+		<bread-crumbs
+			id="article-header-breadcrumbs"
+			role="group"
+			aria-label="Breadcrumbs"
+			data-test-id="article-header-breadcrumbs"
+			class="overflow-hidden flex-grow-1 margin-right-sm margin-right-md-tablet margin-right-lg-desktop margin-left-negative-xxs padding-left-xxs"
+		></bread-crumbs>
+	 
+		<div
+			id="article-header-page-actions"
+			class="opacity-none margin-left-auto display-flex flex-wrap-no-wrap align-items-stretch"
+		>
+			
+		<button
+			class="button button-sm border-none inner-focus display-none-tablet flex-shrink-0 "
+			data-bi-name="ask-learn-assistant-entry"
+			data-test-id="ask-learn-assistant-modal-entry-mobile"
+			data-ask-learn-modal-entry
+			
+			type="button"
+			style="min-width: max-content;"
+			aria-expanded="false"
+			aria-label="Ask Learn"
+			hidden
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-chat-sparkle-fill gradient-ask-learn-logo"></span>
+			</span>
+		</button>
+		<button
+			class="button button-sm display-none display-inline-flex-tablet display-none-desktop flex-shrink-0 margin-right-xxs border-color-ask-learn "
+			data-bi-name="ask-learn-assistant-entry"
+			
+			data-test-id="ask-learn-assistant-modal-entry-tablet"
+			data-ask-learn-modal-entry
+			type="button"
+			style="min-width: max-content;"
+			aria-expanded="false"
+			hidden
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-chat-sparkle-fill gradient-ask-learn-logo"></span>
+			</span>
+			<span>Ask Learn</span>
+		</button>
+		<button
+			class="button button-sm display-none flex-shrink-0 display-inline-flex-desktop margin-right-xxs border-color-ask-learn "
+			data-bi-name="ask-learn-assistant-entry"
+			
+			data-test-id="ask-learn-assistant-flyout-entry"
+			data-ask-learn-flyout-entry
+			data-flyout-button="toggle"
+			type="button"
+			style="min-width: max-content;"
+			aria-expanded="false"
+			aria-controls="ask-learn-flyout"
+			hidden
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-chat-sparkle-fill gradient-ask-learn-logo"></span>
+			</span>
+			<span>Ask Learn</span>
+		</button>
+	 
+		<button
+			type="button"
+			id="ms--focus-mode-button"
+			data-focus-mode
+			data-bi-name="focus-mode-entry"
+			class="button button-sm flex-shrink-0 margin-right-xxs display-none display-inline-flex-desktop"
+		>
+			<span class="icon font-size-lg" aria-hidden="true">
+				<span class="docon docon-glasses"></span>
+			</span>
+			<span>Focus mode</span>
+		</button>
+	 
+
+			<details class="popover popover-right" id="article-header-page-actions-overflow">
+				<summary
+					class="justify-content-flex-start button button-clear button-sm button-primary inner-focus"
+					aria-label="More actions"
+					title="More actions"
+				>
+					<span class="icon" aria-hidden="true">
+						<span class="docon docon-more-vertical"></span>
+					</span>
+				</summary>
+				<div class="popover-content">
+					
+		<button
+			data-page-action-item="overflow-mobile"
+			type="button"
+			class="button-block button-sm inner-focus button button-clear display-none-tablet justify-content-flex-start text-align-left"
+			data-bi-name="contents-expand"
+			data-contents-button
+			data-popover-close
+		>
+			<span class="icon">
+				<span class="docon docon-editor-list-bullet" aria-hidden="true"></span>
+			</span>
+			<span class="contents-expand-title">Table of contents</span>
+		</button>
+	 
+		<a
+			id="lang-link-overflow"
+			class="button-sm inner-focus button button-clear button-block justify-content-flex-start text-align-left"
+			data-bi-name="language-toggle"
+			data-page-action-item="overflow-all"
+			data-check-hidden="true"
+			data-read-in-link
+			href="#"
+			hidden
+		>
+			<span class="icon" aria-hidden="true" data-read-in-link-icon>
+				<span class="docon docon-locale-globe"></span>
+			</span>
+			<span data-read-in-link-text>Read in English</span>
+		</a>
+	 
+		<button
+			type="button"
+			class="collection button button-clear button-sm button-block justify-content-flex-start text-align-left inner-focus"
+			data-list-type="collection"
+			data-bi-name="collection"
+			data-page-action-item="overflow-all"
+			data-check-hidden="true"
+			data-popover-close
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-circle-addition"></span>
+			</span>
+			<span class="collection-status">Add</span>
+		</button>
+	
+					
+		<button
+			type="button"
+			class="collection button button-block button-clear button-sm justify-content-flex-start text-align-left inner-focus"
+			data-list-type="plan"
+			data-bi-name="plan"
+			data-page-action-item="overflow-all"
+			data-check-hidden="true"
+			data-popover-close
+			hidden
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-circle-addition"></span>
+			</span>
+			<span class="plan-status">Add to plan</span>
+		</button>
+	  
+		<a
+			data-contenteditbtn
+			class="button button-clear button-block button-sm inner-focus justify-content-flex-start text-align-left text-decoration-none"
+			data-bi-name="edit"
+			hidden
+			href="https://github.com/MicrosoftDocs/semantic-kernel-docs/blob/main/semantic-kernel/concepts/ai-services/chat-completion/function-calling/index.md"
+			data-original_content_git_url="https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/live/semantic-kernel/concepts/ai-services/chat-completion/function-calling/index.md"
+			data-original_content_git_url_template="{repo}/blob/{branch}/semantic-kernel/concepts/ai-services/chat-completion/function-calling/index.md"
+			data-pr_repo=""
+			data-pr_branch=""
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-edit-outline"></span>
+			</span>
+			<span>Edit</span>
+		</a>
+	
+					
+		<hr class="margin-block-xxs" />
+		<h4 class="font-size-sm padding-left-xxs">Share via</h4>
+		
+					<a
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-facebook"
+						data-bi-name="facebook"
+						data-page-action-item="overflow-all"
+						href="#"
+					>
+						<span class="icon color-primary" aria-hidden="true">
+							<span class="docon docon-facebook-share"></span>
+						</span>
+						<span>Facebook</span>
+					</a>
+
+					<a
+						href="#"
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-twitter"
+						data-bi-name="twitter"
+						data-page-action-item="overflow-all"
+					>
+						<span class="icon color-text" aria-hidden="true">
+							<span class="docon docon-xlogo-share"></span>
+						</span>
+						<span>x.com</span>
+					</a>
+
+					<a
+						href="#"
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-linkedin"
+						data-bi-name="linkedin"
+						data-page-action-item="overflow-all"
+					>
+						<span class="icon color-primary" aria-hidden="true">
+							<span class="docon docon-linked-in-logo"></span>
+						</span>
+						<span>LinkedIn</span>
+					</a>
+					<a
+						href="#"
+						class="button button-clear button-sm inner-focus button-block justify-content-flex-start text-align-left text-decoration-none share-email"
+						data-bi-name="email"
+						data-page-action-item="overflow-all"
+					>
+						<span class="icon color-primary" aria-hidden="true">
+							<span class="docon docon-mail-message"></span>
+						</span>
+						<span>Email</span>
+					</a>
+			  
+	 
+		<hr class="margin-block-xxs" />
+		
+				<button
+					class="button button-block button-clear button-sm justify-content-flex-start text-align-left inner-focus"
+					type="button"
+					data-bi-name="copy-markdown"
+					data-page-action-item="overflow-all"
+					data-copy-markdown
+					data-copy-state="idle"
+					data-check-hidden="true"
+				>
+					<span class="icon color-primary" aria-hidden="true">
+						<span data-show-when="idle" class="docon docon-code-lang"></span>
+						<span data-show-when="loading" class="loader" hidden></span>
+						<span data-show-when="success" class="docon docon-check-mark" hidden></span>
+					</span>
+					<span>Copy Markdown</span>
+				</button>
+		   
+				<button
+					class="button button-block button-clear button-sm justify-content-flex-start text-align-left inner-focus"
+					type="button"
+					data-bi-name="print"
+					data-page-action-item="overflow-all"
+					data-popover-close
+					data-print-page
+					data-check-hidden="true"
+				>
+					<span class="icon color-primary" aria-hidden="true">
+						<span class="docon docon-print"></span>
+					</span>
+					<span>Print</span>
+				</button>
+		  
+	
+				</div>
+			</details>
+		</div>
+	
+			</div>
+		</div>
+	  
+		<!-- privateUnauthorizedTemplate is hidden by default -->
+		<div unauthorized-private-section data-bi-name="permission-content-unauthorized-private" hidden>
+			<hr class="hr margin-top-xs margin-bottom-sm" />
+			<div class="notification notification-info">
+				<div class="notification-content">
+					<p class="margin-top-none notification-title">
+						<span class="icon">
+							<span class="docon docon-exclamation-circle-solid" aria-hidden="true"></span>
+						</span>
+						<span>Note</span>
+					</p>
+					<p class="margin-top-none authentication-determined not-authenticated">
+						Access to this page requires authorization. You can try <a class="docs-sign-in" href="#" data-bi-name="permission-content-sign-in">signing in</a> or <a  class="docs-change-directory" data-bi-name="permisson-content-change-directory">changing directories</a>.
+					</p>
+					<p class="margin-top-none authentication-determined authenticated">
+						Access to this page requires authorization. You can try <a class="docs-change-directory" data-bi-name="permisson-content-change-directory">changing directories</a>.
+					</p>
+				</div>
+			</div>
+		</div>
+	
+					<div class="content"><h1 id="function-calling-with-chat-completion">Function calling with chat completion</h1></div>
+					
+		<div
+			id="article-metadata"
+			data-bi-name="article-metadata"
+			data-test-id="article-metadata"
+			class="page-metadata-container display-flex gap-xxs justify-content-space-between align-items-center flex-wrap-wrap"
+		>
+			 
+				<div
+					id="user-feedback"
+					class="margin-block-xxs display-none display-none-print"
+					hidden
+					data-hide-on-archived
+				>
+					
+		<button
+			id="user-feedback-button"
+			data-test-id="conceptual-feedback-button"
+			class="button button-sm button-clear button-primary display-none"
+			type="button"
+			data-bi-name="user-feedback-button"
+			data-user-feedback-button
+			hidden
+		>
+			<span class="icon" aria-hidden="true">
+				<span class="docon docon-like"></span>
+			</span>
+			<span>Feedback</span>
+		</button>
+	
+				</div>
+		  
+		</div>
+	 
+		<div data-id="ai-summary" hidden>
+			<div id="ms--ai-summary-cta" class="margin-top-xs display-flex align-items-center">
+				<span class="icon" aria-hidden="true">
+					<span class="docon docon-sparkle-fill gradient-text-vivid"></span>
+				</span>
+				<button
+					id="ms--ai-summary"
+					type="button"
+					class="tag tag-sm tag-suggestion margin-left-xxs"
+					data-test-id="ai-summary-cta"
+					data-bi-name="ai-summary-cta"
+					data-an="ai-summary"
+				>
+					<span class="ai-summary-cta-text">
+						Summarize this article for me
+					</span>
+				</button>
+			</div>
+			<!-- Slot where the client will render the summary card after the user clicks the CTA -->
+			<div id="ms--ai-summary-header" class="margin-top-xs"></div>
+		</div>
+	 
+		<nav
+			id="center-doc-outline"
+			class="doc-outline is-hidden-desktop display-none-print margin-bottom-sm"
+			data-bi-name="intopic toc"
+			aria-label="In this article"
+		>
+			<h2 id="ms--in-this-article" class="title is-6 margin-block-xs">
+				In this article
+			</h2>
+		</nav>
+	
+					<div class="content"><p>The most powerful feature of chat completion is the ability to call functions from the model. This allows you to create a chat bot that can interact with your existing code, making it possible to automate business processes, create code snippets, and more.</p>
+<p>With Semantic Kernel, we simplify the process of using function calling by automatically describing your functions and their parameters to the model and then handling the back-and-forth communication between the model and your code.</p>
+<p>When using function calling, however, it's good to understand what's <em>actually</em> happening behind the scenes so that you can optimize your code and make the most of this feature.</p>
+<h2 id="how-auto-function-calling-works">How auto function calling works</h2>
+<div class="NOTE">
+<p>Note</p>
+<p>The following section describes how auto function calling works in Semantic Kernel. Auto function calling is the default behavior in Semantic Kernel, but you can also manually invoke functions if you prefer. For more information on manual function invocation, please refer to the <a href="function-invocation#manual-function-invocation" data-linktype="relative-path">function invocation article</a>.</p>
+</div>
+<p>When you make a request to a model with function calling enabled, Semantic Kernel performs the following steps:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Step</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="#1-serializing-the-functions" data-linktype="self-bookmark"><strong>Serialize functions</strong></a></td>
+<td>All of the available functions (and its input parameters) in the kernel are serialized using JSON schema.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="#2-sending-the-messages-and-functions-to-the-model" data-linktype="self-bookmark"><strong>Send the messages and functions to the model</strong></a></td>
+<td>The serialized functions (and the current chat history) are sent to the model as part of the input.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="#3-model-processes-the-input" data-linktype="self-bookmark"><strong>Model processes the input</strong></a></td>
+<td>The model processes the input and generates a response. The response can either be a chat message or one or more function calls.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="#4-handle-the-response" data-linktype="self-bookmark"><strong>Handle the response</strong></a></td>
+<td>If the response is a chat message, it is returned to the caller. If the response is a function call, however, Semantic Kernel extracts the function name and its parameters.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="#5-invoke-the-function" data-linktype="self-bookmark"><strong>Invoke the function</strong></a></td>
+<td>The extracted function name and parameters are used to invoke the function in the kernel.</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="#6-return-the-function-result" data-linktype="self-bookmark"><strong>Return the function result</strong></a></td>
+<td>The result of the function is then sent back to the model as part of the chat history. Steps 2-6 are then repeated until the model returns a chat message or the max iteration number has been reached.</td>
+</tr>
+</tbody>
+</table>
+<p>The following diagram illustrates the process of function calling:</p>
+<p><img src="../../../../media/functioncalling.png" alt="Semantic Kernel function calling" data-linktype="relative-path"></p>
+<p>The following section will use a concrete example to illustrate how function calling works in practice.</p>
+<h2 id="example-ordering-a-pizza">Example: Ordering a pizza</h2>
+<p>Let's assume you have a plugin that allows a user to order a pizza. The plugin has the following functions:</p>
+<ol>
+<li><code>get_pizza_menu</code>: Returns a list of available pizzas</li>
+<li><code>add_pizza_to_cart</code>: Adds a pizza to the user's cart</li>
+<li><code>remove_pizza_from_cart</code>: Removes a pizza from the user's cart</li>
+<li><code>get_pizza_from_cart</code>: Returns the specific details of a pizza in the user's cart</li>
+<li><code>get_cart</code>: Returns the user's current cart</li>
+<li><code>checkout</code>: Checks out the user's cart</li>
+</ol>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<p>In C#, the plugin might look like this:</p>
+<pre><code class="lang-csharp">public class OrderPizzaPlugin(
+    IPizzaService pizzaService,
+    IUserContext userContext,
+    IPaymentService paymentService)
+{
+    [KernelFunction("get_pizza_menu")]
+    public async Task&lt;Menu&gt; GetPizzaMenuAsync()
+    {
+        return await pizzaService.GetMenu();
+    }
+
+    [KernelFunction("add_pizza_to_cart")]
+    [Description("Add a pizza to the user's cart; returns the new item and updated cart")]
+    public async Task&lt;CartDelta&gt; AddPizzaToCart(
+        PizzaSize size,
+        List&lt;PizzaToppings&gt; toppings,
+        int quantity = 1,
+        string specialInstructions = ""
+    )
+    {
+        Guid cartId = userContext.GetCartId();
+        return await pizzaService.AddPizzaToCart(
+            cartId: cartId,
+            size: size,
+            toppings: toppings,
+            quantity: quantity,
+            specialInstructions: specialInstructions);
+    }
+
+    [KernelFunction("remove_pizza_from_cart")]
+    public async Task&lt;RemovePizzaResponse&gt; RemovePizzaFromCart(int pizzaId)
+    {
+        Guid cartId = userContext.GetCartId();
+        return await pizzaService.RemovePizzaFromCart(cartId, pizzaId);
+    }
+
+    [KernelFunction("get_pizza_from_cart")]
+    [Description("Returns the specific details of a pizza in the user's cart; use this instead of relying on previous messages since the cart may have changed since then.")]
+    public async Task&lt;Pizza&gt; GetPizzaFromCart(int pizzaId)
+    {
+        Guid cartId = await userContext.GetCartIdAsync();
+        return await pizzaService.GetPizzaFromCart(cartId, pizzaId);
+    }
+
+    [KernelFunction("get_cart")]
+    [Description("Returns the user's current cart, including the total price and items in the cart.")]
+    public async Task&lt;Cart&gt; GetCart()
+    {
+        Guid cartId = await userContext.GetCartIdAsync();
+        return await pizzaService.GetCart(cartId);
+    }
+
+    [KernelFunction("checkout")]
+    [Description("Checkouts the user's cart; this function will retrieve the payment from the user and complete the order.")]
+    public async Task&lt;CheckoutResponse&gt; Checkout()
+    {
+        Guid cartId = await userContext.GetCartIdAsync();
+        Guid paymentId = await paymentService.RequestPaymentFromUserAsync(cartId);
+
+        return await pizzaService.Checkout(cartId, paymentId);
+    }
+}
+</code></pre>
+<p>You would then add this plugin to the kernel like so:</p>
+<pre><code class="lang-csharp">IKernelBuilder kernelBuilder = new KernelBuilder();
+kernelBuilder..AddAzureOpenAIChatCompletion(
+    deploymentName: "NAME_OF_YOUR_DEPLOYMENT",
+    apiKey: "YOUR_API_KEY",
+    endpoint: "YOUR_AZURE_ENDPOINT"
+);
+kernelBuilder.Plugins.AddFromType&lt;OrderPizzaPlugin&gt;("OrderPizza");
+Kernel kernel = kernelBuilder.Build();
+</code></pre>
+<div class="NOTE">
+<p>Note</p>
+<p>Only functions with the <code>KernelFunction</code> attribute will be serialized and sent to the model. This allows you to have helper functions that are not exposed to the model.</p>
+</div>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<p>In Python, the plugin might look like this:</p>
+<pre><code class="lang-python">from semantic_kernel.functions import kernel_function
+
+class OrderPizzaPlugin:
+    def __init__(self, pizza_service, user_context, payment_service):
+        self.pizza_service = pizza_service
+        self.user_context = user_context
+        self.payment_service = payment_service
+
+    @kernel_function
+    async def get_pizza_menu(self):
+        return await self.pizza_service.get_menu()
+
+    @kernel_function(
+        description="Add a pizza to the user's cart; returns the new item and updated cart"
+    )
+    async def add_pizza_to_cart(self, size: PizzaSize, toppings: List[PizzaToppings], quantity: int = 1, special_instructions: str = ""):
+        cart_id = await self.user_context.get_cart_id()
+        return await self.pizza_service.add_pizza_to_cart(cart_id, size, toppings, quantity, special_instructions)
+
+    @kernel_function(
+        description="Remove a pizza from the user's cart; returns the updated cart"
+    )
+    async def remove_pizza_from_cart(self, pizza_id: int):
+        cart_id = await self.user_context.get_cart_id()
+        return await self.pizza_service.remove_pizza_from_cart(cart_id, pizza_id)
+
+    @kernel_function(
+        description="Returns the specific details of a pizza in the user's cart; use this instead of relying on previous messages since the cart may have changed since then."
+    )
+    async def get_pizza_from_cart(self, pizza_id: int):
+        cart_id = await self.user_context.get_cart_id()
+        return await self.pizza_service.get_pizza_from_cart(cart_id, pizza_id)
+
+    @kernel_function(
+        description="Returns the user's current cart, including the total price and items in the cart."
+    )
+    async def get_cart(self):
+        cart_id = await self.user_context.get_cart_id()
+        return await self.pizza_service.get_cart(cart_id)
+
+    @kernel_function(
+        description="Checkouts the user's cart; this function will retrieve the payment from the user and complete the order."
+    )
+    async def checkout(self):
+        cart_id = await self.user_context.get_cart_id()
+        payment_id = await self.payment_service.request_payment_from_user(cart_id)
+        return await self.pizza_service.checkout(cart_id, payment_id)
+</code></pre>
+<p>You would then add this plugin to the kernel like so:</p>
+<pre><code class="lang-python">from semantic_kernel import Kernel
+
+kernel = Kernel()
+
+# Create the services needed for the plugin: pizza_service, user_context, and payment_service
+# ...
+
+# Add the plugin to the kernel
+kernel.add_plugin(OrderPizzaPlugin(pizza_service, user_context, payment_service), plugin_name="OrderPizza")
+</code></pre>
+<div class="NOTE">
+<p>Note</p>
+<p>Only functions with the <code>kernel_function</code> decorator will be serialized and sent to the model. This allows you to have helper functions that are not exposed to the model.</p>
+</div>
+<h2 id="reserved-parameter-names-for-auto-function-calling">Reserved Parameter Names for Auto Function Calling</h2>
+<p>When using auto function calling in KernelFunctions, certain parameter names are <strong>reserved</strong> and receive special handling. These reserved names allow you to automatically access key objects required for function execution.</p>
+<h3 id="reserved-names">Reserved Names</h3>
+<p>The following parameter names are reserved:</p>
+<ul>
+<li><code>kernel</code></li>
+<li><code>service</code></li>
+<li><code>execution_settings</code></li>
+<li><code>arguments</code></li>
+</ul>
+<h3 id="how-they-work">How They Work</h3>
+<p>During function invocation, the method <a href="https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_method.py#L148" data-linktype="external"><code>gather_function_parameters</code></a> inspects each parameter. If the parameter's name matches one of the reserved names, it is populated with specific objects:</p>
+<ul>
+<li><strong><code>kernel</code></strong>: Injected with the kernel object.</li>
+<li><strong><code>service</code></strong>: Populated with the AI service selected based on the provided arguments.</li>
+<li><strong><code>execution_settings</code></strong>: Contains settings pertinent to the function's execution.</li>
+<li><strong><code>arguments</code></strong>: Receives the entire set of kernel arguments passed during invocation.</li>
+</ul>
+<p>This design ensures that these parameters are automatically managed, eliminating the need for manual extraction or assignment.</p>
+<h3 id="example-usage">Example Usage</h3>
+<p>Consider the following example:</p>
+<pre><code class="lang-python">class SimplePlugin:
+    @kernel_function(name="GetWeather", description="Get the weather for a location.")
+    async def get_the_weather(self, location: str, arguments: KernelArguments) -&gt; str:
+        # The 'arguments' parameter is reserved and automatically populated with KernelArguments.
+        return f"Received user input: {location}, the weather is nice!"
+</code></pre>
+<h2 id="custom-reserved-parameter-names-for-auto-function-calling">Custom Reserved Parameter Names for Auto Function Calling</h2>
+<p>You can also customize this behavior. In order to do that, you need to annotate the parameter you want to exclude from the function calling definition, like this:</p>
+<pre><code class="lang-python">class SimplePlugin:
+    @kernel_function(name="GetWeather", description="Get the weather for a location.")
+    async def get_the_weather(self, location: str, special_arg: Annotated[str, {"include_in_function_choices": False}]) -&gt; str:
+        # The 'special_arg' parameter is reserved and you need to ensure it either has a default value or gets passed.
+</code></pre>
+<p>When calling this function, make sure to pass the <code>special_arg</code> parameter, otherwise it will raise an error.</p>
+<pre><code class="lang-python">response = await kernel.invoke_async(
+    plugin_name=...,
+    function_name="GetWeather",
+    location="Seattle",
+    special_arg="This is a special argument"
+)
+</code></pre>
+<p>Or add it to the <code>KernelArguments</code> object to use it with auto function calling in an agent like this:</p>
+<pre><code class="lang-python">arguments = KernelArguments(special_arg="This is a special argument")
+response = await agent.get_response(
+    messages="what's the weather in Seattle?"
+    arguments=arguments)
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<p>In Java, the plugin might look like this:</p>
+<pre><code class="lang-java">public class OrderPizzaPlugin {
+
+    private final PizzaService pizzaService;
+    private final HttpSession userContext;
+    private final PaymentService paymentService;
+
+    public OrderPizzaPlugin(
+        PizzaService pizzaService,
+        UserContext userContext,
+        PaymentService paymentService)
+    {
+      this.pizzaService = pizzaService;
+      this.userContext = userContext;
+      this.paymentService = paymentService;
+    }
+
+    @DefineKernelFunction(name = "get_pizza_menu", description = "Get the pizza menu.", returnType = "com.pizzashop.Menu")
+    public Mono&lt;Menu&gt; getPizzaMenuAsync()
+    {
+        return pizzaService.getMenu();
+    }
+
+    @DefineKernelFunction(
+        name = "add_pizza_to_cart", 
+        description = "Add a pizza to the user's cart",
+        returnDescription = "Returns the new item and updated cart", 
+        returnType = "com.pizzashop.CartDelta")
+    public Mono&lt;CartDelta&gt; addPizzaToCart(
+        @KernelFunctionParameter(name = "size", description = "The size of the pizza", type = com.pizzashopo.PizzaSize.class, required = true)
+        PizzaSize size,
+        @KernelFunctionParameter(name = "toppings", description = "The toppings to add to the the pizza", type = com.pizzashopo.PizzaToppings.class)
+        List&lt;PizzaToppings&gt; toppings,
+        @KernelFunctionParameter(name = "quantity", description = "How many of this pizza to order", type = Integer.class, defaultValue = "1")
+        int quantity,
+        @KernelFunctionParameter(name = "specialInstructions", description = "Special instructions for the order",)
+        String specialInstructions
+    )
+    {
+        UUID cartId = userContext.getCartId();
+        return pizzaService.addPizzaToCart(
+            cartId,
+            size,
+            toppings,
+            quantity,
+            specialInstructions);
+    }
+
+    @DefineKernelFunction(name = "remove_pizza_from_cart", description = "Remove a pizza from the cart.", returnType = "com.pizzashop.RemovePizzaResponse")
+    public Mono&lt;RemovePizzaResponse&gt; removePizzaFromCart(
+        @KernelFunctionParameter(name = "pizzaId", description = "Id of the pizza to remove from the cart", type = Integer.class, required = true)
+        int pizzaId)
+    {
+        UUID cartId = userContext.getCartId();
+        return pizzaService.removePizzaFromCart(cartId, pizzaId);
+    }
+
+    @DefineKernelFunction(
+        name = "get_pizza_from_cart", 
+        description = "Returns the specific details of a pizza in the user's cart; use this instead of relying on previous messages since the cart may have changed since then.",
+        returnType = "com.pizzashop.Pizza")
+    public Mono&lt;Pizza&gt; getPizzaFromCart(
+        @KernelFunctionParameter(name = "pizzaId", description = "Id of the pizza to get from the cart", type = Integer.class, required = true)
+        int pizzaId)
+    {
+
+        UUID cartId = userContext.getCartId();
+        return pizzaService.getPizzaFromCart(cartId, pizzaId);
+    }
+
+    @DefineKernelFunction(
+        name = "get_cart", 
+        description = "Returns the user's current cart, including the total price and items in the cart.",
+        returnType = "com.pizzashop.Cart")
+
+    public Mono&lt;Cart&gt; getCart()
+    {
+        UUID cartId = userContext.getCartId();
+        return pizzaService.getCart(cartId);
+    }
+
+
+    @DefineKernelFunction(
+        name = "checkout", 
+        description = "Checkouts the user's cart; this function will retrieve the payment from the user and complete the order.",
+        returnType = "com.pizzashop.CheckoutResponse")
+    public Mono&lt;CheckoutResponse&gt; Checkout()
+    {
+        UUID cartId = userContext.getCartId();
+        return paymentService.requestPaymentFromUser(cartId)
+                .flatMap(paymentId -&gt; pizzaService.checkout(cartId, paymentId));
+    }
+}
+</code></pre>
+<p>You would then add this plugin to the kernel like so:</p>
+<pre><code class="lang-java">OpenAIAsyncClient client = new OpenAIClientBuilder()
+  .credential(openAIClientCredentials)
+  .buildAsyncClient();
+
+ChatCompletionService chat = OpenAIChatCompletion.builder()
+  .withModelId(modelId)
+  .withOpenAIAsyncClient(client)
+  .build();
+
+KernelPlugin plugin = KernelPluginFactory.createFromObject(
+  new OrderPizzaPlugin(pizzaService, userContext, paymentService),
+  "OrderPizzaPlugin"
+);
+
+Kernel kernel = Kernel.builder()
+    .withAIService(ChatCompletionService.class, chat)
+    .withPlugin(plugin)
+    .build();
+</code></pre>
+<div class="NOTE">
+<p>Note</p>
+<p>Only functions with the <code>DefineKernelFunction</code> annotation will be serialized and sent to the model. This allows you to have helper functions that are not exposed to the model.</p>
+</div>
+</div>
+<h3 id="1-serializing-the-functions">1) Serializing the functions</h3>
+<p>When you create a kernel with the <code>OrderPizzaPlugin</code>, the kernel will automatically serialize the functions and their parameters. This is necessary so that the model can understand the functions and their inputs.</p>
+<p>For the above plugin, the serialized functions would look like this:</p>
+<pre><code class="lang-json">[
+  {
+    "type": "function",
+    "function": {
+      "name": "OrderPizza-get_pizza_menu",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "OrderPizza-add_pizza_to_cart",
+      "description": "Add a pizza to the user's cart; returns the new item and updated cart",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "string",
+            "enum": ["Small", "Medium", "Large"]
+          },
+          "toppings": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Cheese", "Pepperoni", "Mushrooms"]
+            }
+          },
+          "quantity": {
+            "type": "integer",
+            "default": 1,
+            "description": "Quantity of pizzas"
+          },
+          "specialInstructions": {
+            "type": "string",
+            "default": "",
+            "description": "Special instructions for the pizza"
+          }
+        },
+        "required": ["size", "toppings"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "OrderPizza-remove_pizza_from_cart",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pizzaId": {
+            "type": "integer"
+          }
+        },
+        "required": ["pizzaId"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "OrderPizza-get_pizza_from_cart",
+      "description": "Returns the specific details of a pizza in the user's cart; use this instead of relying on previous messages since the cart may have changed since then.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pizzaId": {
+            "type": "integer"
+          }
+        },
+        "required": ["pizzaId"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "OrderPizza-get_cart",
+      "description": "Returns the user's current cart, including the total price and items in the cart.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "OrderPizza-checkout",
+      "description": "Checkouts the user's cart; this function will retrieve the payment from the user and complete the order.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  }
+]
+</code></pre>
+<p>There's a few things to note here which can impact both the performance and the quality of the chat completion:</p>
+<ol>
+<li><p><strong>Verbosity of function schema</strong> – Serializing functions for the model to use doesn't come for free. The more verbose the schema, the more tokens the model has to process, which can slow down the response time and increase costs.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>Keep your functions as simple as possible. In the above example, you'll notice that not <em>all</em> functions have descriptions where the function name is self-explanatory. This is intentional to reduce the number of tokens. The parameters are also kept simple; anything the model shouldn't need to know (like the <code>cartId</code> or <code>paymentId</code>) are kept hidden. This information is instead provided by internal services.</p>
+</div>
+<div class="NOTE">
+<p>Note</p>
+<p>The one thing you don't need to worry about is the complexity of the return types. You'll notice that the return types are not serialized in the schema. This is because the model doesn't need to know the return type to generate a response. In Step 6, however, we'll see how overly verbose return types can impact the quality of the chat completion.</p>
+</div>
+</li>
+<li><p><strong>Parameter types</strong> – With the schema, you can specify the type of each parameter. This is important for the model to understand the expected input. In the above example, the <code>size</code> parameter is an enum, and the <code>toppings</code> parameter is an array of enums. This helps the model generate more accurate responses.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>Avoid, where possible, using <code>string</code> as a parameter type. The model can't infer the type of string, which can lead to ambiguous responses. Instead, use enums or other types (e.g., <code>int</code>, <code>float</code>, and complex types) where possible.</p>
+</div>
+</li>
+<li><p><strong>Required parameters</strong> - You can also specify which parameters are required. This is important for the model to understand which parameters are <em>actually</em> necessary for the function to work. Later on in Step 3, the model will use this information to provide as minimal information as necessary to call the function.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>Only mark parameters as required if they are <em>actually</em> required. This helps the model call functions more quickly and accurately.</p>
+</div>
+</li>
+<li><p><strong>Function descriptions</strong> – Function descriptions are optional but can help the model generate more accurate responses. In particular, descriptions can tell the model what to expect from the response since the return type is not serialized in the schema. If the model is using functions improperly, you can also add descriptions to provide examples and guidance.</p>
+<p>For example, in the <code>get_pizza_from_cart</code> function, the description tells the user to use this function instead of relying on previous messages. This is important because the cart may have changed since the last message.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>Before adding a description, ask yourself if the model <em>needs</em> this information to generate a response. If not, consider leaving it out to reduce verbosity. You can always add descriptions later if the model is struggling to use the function properly.</p>
+</div>
+</li>
+<li><p><strong>Plugin name</strong> – As you can see in the serialized functions, each function has a <code>name</code> property. Semantic Kernel uses the plugin name to namespace the functions. This is important because it allows you to have multiple plugins with functions of the same name. For example, you may have plugins for multiple search services, each with their own <code>search</code> function. By namespacing the functions, you can avoid conflicts and make it easier for the model to understand which function to call.</p>
+<p>Knowing this, you should choose a plugin name that is unique and descriptive. In the above example, the plugin name is <code>OrderPizza</code>. This makes it clear that the functions are related to ordering pizza.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>When choosing a plugin name, we recommend removing superfluous words like "plugin" or "service". This helps reduce verbosity and makes the plugin name easier to understand for the model.</p>
+</div>
+<div class="NOTE">
+<p>Note</p>
+<p>By default, the delimiter for the function name is <code>-</code>. While this works for most models, some of them may have different requirements, such as <a href="https://ai.google.dev/gemini-api/docs/function-calling#key-parameters-best-practices" data-linktype="external">Gemini</a>. This is taken care of by the kernel automatically however you may see slightly different function names in the serialized functions.</p>
+</div>
+</li>
+</ol>
+<h3 id="2-sending-the-messages-and-functions-to-the-model">2) Sending the messages and functions to the model</h3>
+<p>Once the functions are serialized, they are sent to the model along with the current chat history. This allows the model to understand the context of the conversation and the available functions.</p>
+<p>In this scenario, we can imagine the user asking the assistant to add a pizza to their cart:</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">ChatHistory chatHistory = [];
+chatHistory.AddUserMessage("I'd like to order a pizza!");
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">chat_history = ChatHistory()
+chat_history.add_user_message("I'd like to order a pizza!")
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<pre><code class="lang-java">ChatHistory chatHistory = new ChatHistory();
+chatHistory.addUserMessage("I'd like to order a pizza!");
+</code></pre>
+</div>
+<p>We can then send this chat history and the serialized functions to the model. The model will use this information to determine the best way to respond.</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">IChatCompletionService chatCompletion = kernel.GetRequiredService&lt;IChatCompletionService&gt;();
+
+OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()&nbsp;
+{
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+};
+
+ChatResponse response = await chatCompletion.GetChatMessageContentAsync(
+    chatHistory,
+    executionSettings: openAIPromptExecutionSettings,
+    kernel: kernel)
+</code></pre>
+<div class="NOTE">
+<p>Note</p>
+<p>This example uses the <code>FunctionChoiceBehavior.Auto()</code> behavior, one of the few available ones. For more information about other function choice behaviors, check out the <a href="function-choice-behaviors" data-linktype="relative-path">function choice behaviors article</a>.</p>
+</div>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">chat_completion = kernel.get_service(type=ChatCompletionClientBase)
+
+execution_settings = AzureChatPromptExecutionSettings()
+execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+
+response = await chat_completion.get_chat_message_content(
+    chat_history=history,
+    settings=execution_settings,
+    kernel=kernel,
+)
+</code></pre>
+<div class="NOTE">
+<p>Note</p>
+<p>This example uses the <code>FunctionChoiceBehavior.Auto()</code> behavior, one of the few available ones. For more information about other function choice behaviors, check out the <a href="function-choice-behaviors" data-linktype="relative-path">function choice behaviors article</a>.</p>
+</div>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<pre><code class="lang-java">ChatCompletionService chatCompletion = kernel.getService(I)ChatCompletionService.class);
+
+InvocationContext invocationContext = InvocationContext.builder()
+    .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false));
+
+List&lt;ChatResponse&gt; responses = chatCompletion.getChatMessageContentsAsync(
+    chatHistory,
+    kernel,
+    invocationContext).block();
+</code></pre>
+</div>
+<div class="IMPORTANT">
+<p>Important</p>
+<p>The kernel must be passed to the service in order to use function calling. This is because the plugins are registered with the kernel, and the service needs to know which plugins are available.</p>
+</div>
+<h3 id="3-model-processes-the-input">3) Model processes the input</h3>
+<p>With both the chat history and the serialized functions, the model can determine the best way to respond. In this case, the model recognizes that the user wants to order a pizza. The model would likely <em>want</em> to call the <code>add_pizza_to_cart</code> function, but because we specified the size and toppings as required parameters, the model will ask the user for this information:</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">Console.WriteLine(response);
+chatHistory.AddAssistantMessage(response);
+
+// "Before I can add a pizza to your cart, I need to
+// know the size and toppings. What size pizza would
+// you like? Small, medium, or large?"
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">print(response)
+chat_history.add_assistant_message(response)
+
+# "Before I can add a pizza to your cart, I need to
+# know the size and toppings. What size pizza would
+# you like? Small, medium, or large?"
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<pre><code class="lang-java">responses.forEach(response -&gt; System.out.printlin(response.getContent());
+chatHistory.addAll(responses);
+
+// "Before I can add a pizza to your cart, I need to
+// know the size and toppings. What size pizza would
+// you like? Small, medium, or large?"
+</code></pre>
+</div>
+<p>Since the model wants the user to respond next, Semantic Kernel will stop automatic function calling and return control to the user. At this point, the user can respond with the size and toppings of the pizza they want to order:</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">chatHistory.AddUserMessage("I'd like a medium pizza with cheese and pepperoni, please.");
+
+response = await chatCompletion.GetChatMessageContentAsync(
+    chatHistory,
+    kernel: kernel)
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">chat_history.add_user_message("I'd like a medium pizza with cheese and pepperoni, please.")
+
+response = await chat_completion.get_chat_message_content(
+    chat_history=history,
+    settings=execution_settings,
+    kernel=kernel,
+)
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<pre><code class="lang-java">chatHistory.addUserMessage("I'd like a medium pizza with cheese and pepperoni, please.");
+
+responses = chatCompletion.GetChatMessageContentAsync(
+    chatHistory,
+    kernel,
+    null).block();
+</code></pre>
+</div>
+<p>Now that the model has the necessary information, it can now call the <code>add_pizza_to_cart</code> function with the user's input. Behind the scenes, it adds a new message to the chat history that looks like this:</p>
+<pre><code class="lang-csharp">"tool_calls": [
+    {
+        "id": "call_abc123",
+        "type": "function",
+        "function": {
+            "name": "OrderPizzaPlugin-add_pizza_to_cart",
+            "arguments": "{\n\"size\": \"Medium\",\n\"toppings\": [\"Cheese\", \"Pepperoni\"]\n}"
+        }
+    }
+]
+</code></pre>
+<div class="TIP">
+<p>Tip</p>
+<p>It's good to remember that every argument you require must be generated by the model. This means spending tokens to generate the response. Avoid arguments that require many tokens (like a GUID). For example, notice that we use an <code>int</code> for the <code>pizzaId</code>. Asking the model to send a one to two digit number is much easier than asking for a GUID.</p>
+</div>
+<div class="IMPORTANT">
+<p>Important</p>
+<p>This step is what makes function calling so powerful. Previously, AI app developers had to create separate processes to extract intent and slot fill functions. With function calling, the model can decide <em>when</em> to call a function and <em>what</em> information to provide.</p>
+</div>
+<h3 id="4-handle-the-response">4) Handle the response</h3>
+<p>When Semantic Kernel receives the response from the model, it checks if the response is a function call. If it is, Semantic Kernel extracts the function name and its parameters. In this case, the function name is <code>OrderPizzaPlugin-add_pizza_to_cart</code>, and the arguments are the size and toppings of the pizza.</p>
+<p>With this information, Semantic Kernel can marshal the inputs into the appropriate types and pass them to the <code>add_pizza_to_cart</code> function in the <code>OrderPizzaPlugin</code>. In this example, the arguments originate as a JSON string but are deserialized by Semantic Kernel into a <code>PizzaSize</code> enum and a <code>List&lt;PizzaToppings&gt;</code>.</p>
+<div class="NOTE">
+<p>Note</p>
+<p>Marshaling the inputs into the correct types is one of the key benefits of using Semantic Kernel. Everything from the model comes in as a JSON object, but Semantic Kernel can automatically deserialize these objects into the correct types for your functions.</p>
+</div>
+<p>After marshalling the inputs, Semantic Kernel will also add the function call to the chat history:</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">chatHistory.Add(
+    new() {
+        Role = AuthorRole.Assistant,
+        Items = [
+            new FunctionCallContent(
+                functionName: "add_pizza_to_cart",
+                pluginName: "OrderPizza",
+                id: "call_abc123",
+                arguments: new () { {"size", "Medium"}, {"toppings", ["Cheese", "Pepperoni"]} }
+            )
+        ]
+    }
+);
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">from semantic_kernel.contents import ChatMessageContent, FunctionCallContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+
+chat_history.add_message(
+    ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(
+                name="OrderPizza-add_pizza_to_cart",
+                id="call_abc123",
+                arguments=str({"size": "Medium", "toppings": ["Cheese", "Pepperoni"]})
+            )
+        ]
+    )
+)
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<p>Semantic Kernel for Java handles function calling differently than C# and Python when the
+auto-invoke tool call behavior is false. You do not add function call content to the chat
+history; rather, the application is made responsible for invoking the function calls.
+Skip to the next section, "Invoke the function", for an example of handling
+function calls in Java when auto-invoke is false.</p>
+</div>
+<h3 id="5-invoke-the-function">5) Invoke the function</h3>
+<p>Once Semantic Kernel has the correct types, it can finally invoke the <code>add_pizza_to_cart</code> function. Because the plugin uses dependency injection, the function can interact with external services like <code>pizzaService</code> and <code>userContext</code> to add the pizza to the user's cart.</p>
+<p>Not all functions will succeed, however. If the function fails, Semantic Kernel can handle the error and provide a default response to the model. This allows the model to understand what went wrong and decide to retry or generate a response to the user.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>To ensure a model can self-correct, it's important to provide error messages that clearly communicate what went wrong and how to fix it. This can help the model retry the function call with the correct information.</p>
+</div>
+<div class="NOTE">
+<p>Note</p>
+<p>Semantic Kernel automatically invokes functions by default. However, if you prefer to manage function invocation manually, you can enable manual function invocation mode. For more details on how to do this, please refer to the <a href="function-invocation" data-linktype="relative-path">function invocation article</a>.</p>
+</div>
+<h3 id="6-return-the-function-result">6) Return the function result</h3>
+<p>After the function has been invoked, the function result is sent back to the model as part of the chat history. This allows the model to understand the context of the conversation and generate a subsequent response.</p>
+<p>Behind the scenes, Semantic Kernel adds a new message to the chat history from the tool role that looks like this:</p>
+<div class="zone has-pivot" data-pivot="programming-language-csharp">
+<pre><code class="lang-csharp">chatHistory.Add(
+    new() {
+        Role = AuthorRole.Tool,
+        Items = [
+            new FunctionResultContent(
+                functionName: "add_pizza_to_cart",
+                pluginName: "OrderPizza",
+                id: "0001",
+                result: "{ \"new_items\": [ { \"id\": 1, \"size\": \"Medium\", \"toppings\": [\"Cheese\",\"Pepperoni\"] } ] }"
+            )
+        ]
+    }
+);
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-python">
+<pre><code class="lang-python">from semantic_kernel.contents import ChatMessageContent, FunctionResultContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+
+chat_history.add_message(
+    ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[
+            FunctionResultContent(
+                name="OrderPizza-add_pizza_to_cart",
+                id="0001",
+                result="{ \"new_items\": [ { \"id\": 1, \"size\": \"Medium\", \"toppings\": [\"Cheese\",\"Pepperoni\"] } ] }"
+            )
+        ]
+    )
+)
+</code></pre>
+</div>
+<div class="zone has-pivot" data-pivot="programming-language-java">
+<p>If auto-invoke is disabled in the tool call behavior, a Java application
+must invoke the function calls and add the function result as an <code>AuthorRole.TOOL</code> message
+to the chat history.</p>
+<pre><code class="lang-java">messages.stream()
+    .filter (it -&gt; it instanceof OpenAIChatMessageContent)
+        .map(it -&gt; ((OpenAIChatMessageContent&lt;?&gt;) it).getToolCall())
+        .flatMap(List::stream)
+        .forEach(toolCall -&gt; {
+            String content;
+            try {
+                // getFunction will throw an exception if the function is not found
+                var fn = kernel.getFunction(toolCall.getPluginName(),
+                        toolCall.getFunctionName());
+                FunctionResult&lt;?&gt; fnResult = fn
+                        .invokeAsync(kernel, toolCall.getArguments(), null, null).block();
+                content = (String) fnResult.getResult();
+            } catch (IllegalArgumentException e) {
+                content = "Unable to find function. Please try again!";
+            }
+
+            chatHistory.addMessage(
+                    AuthorRole.TOOL,
+                    content,
+                    StandardCharsets.UTF_8,
+                    FunctionResultMetadata.build(toolCall.getId()));
+        });
+</code></pre>
+</div>
+<p>Notice that the result is a JSON string that the model then needs to process. As before, the model will need to spend tokens consuming this information. This is why it's important to keep the return types as simple as possible. In this case, the return only includes the new items added to the cart, not the entire cart.</p>
+<div class="TIP">
+<p>Tip</p>
+<p>Be as succinct as possible with your returns. Where possible, only return the information the model needs or summarize the information using another LLM prompt before returning it.</p>
+</div>
+<h3 id="repeat-steps-2-6">Repeat steps 2-6</h3>
+<p>After the result is returned to the model, the process repeats. The model processes the latest chat history and generates a response. In this case, the model might ask the user if they want to add another pizza to their cart or if they want to check out.</p>
+<h2 id="parallel-function-calls">Parallel function calls</h2>
+<p>In the above example, we demonstrated how an LLM can call a single function. Often this can be slow if you need to call multiple functions in sequence. To speed up the process, several LLMs support parallel function calls. This allows the LLM to call multiple functions at once, speeding up the process.</p>
+<p>For example, if a user wants to order multiple pizzas, the LLM can call the <code>add_pizza_to_cart</code> function for each pizza at the same time. This can significantly reduce the number of round trips to the LLM and speed up the ordering process.</p>
+<h2 id="next-steps">Next steps</h2>
+<p>Now that you understand how function calling works, you can proceed to learn how to configure various aspects of function calling that better correspond to your specific scenarios by going to the next step:</p>
+<div class="nextstepaction">
+<p><a href="function-choice-behaviors" data-linktype="relative-path">Function Choice Behavior</a></p>
+</div>
+</div>
+					
+		<div
+			id="ms--inline-notifications"
+			class="margin-block-xs"
+			data-bi-name="inline-notification"
+		></div>
+	 
+		<div
+			id="assertive-live-region"
+			role="alert"
+			aria-live="assertive"
+			class="visually-hidden"
+			aria-relevant="additions"
+			aria-atomic="true"
+		></div>
+		<div
+			id="polite-live-region"
+			role="status"
+			aria-live="polite"
+			class="visually-hidden"
+			aria-relevant="additions"
+			aria-atomic="true"
+		></div>
+	
+					
+				</div>
+				
+		<div id="ms--additional-resources-mobile" class="display-none-print">
+			<hr class="hr" hidden />
+			<h2 id="ms--additional-resources-mobile-heading" class="title is-3" hidden>
+				Additional resources
+			</h2>
+			
+		<section
+			id="right-rail-recommendations-mobile"
+			class=""
+			data-bi-name="recommendations"
+			hidden
+		></section>
+	 
+		<section
+			id="right-rail-training-mobile"
+			class=""
+			data-bi-name="learning-resource-card"
+			hidden
+		></section>
+	 
+		<section
+			id="right-rail-events-mobile"
+			class=""
+			data-bi-name="events-card"
+			hidden
+		></section>
+	 
+		<section
+			id="right-rail-qna-mobile"
+			class="margin-top-xxs"
+			data-bi-name="qna-link-card"
+			hidden
+		></section>
+	
+		</div>
+	 
+		<div
+			id="article-metadata-footer"
+			data-bi-name="article-metadata-footer"
+			data-test-id="article-metadata-footer"
+			class="page-metadata-container"
+		>
+			<hr class="hr" />
+			<ul class="metadata page-metadata" data-bi-name="page info" lang="en-us" dir="ltr">
+				<li class="visibility-hidden-visual-diff">
+			<span class="badge badge-sm text-wrap-pretty">
+				<span>Last updated on <local-time format="twoDigitNumeric"
+		datetime="2025-04-16T15:30:00.000Z"
+		data-article-date-source="calculated"
+		class="is-invisible"
+	>
+		2025-04-16
+	</local-time></span>
+			</span>
+		</li>
+			</ul>
+		</div>
+	
+			</div>
+			
+		<div
+			id="action-panel"
+			role="region"
+			aria-label="Action Panel"
+			class="action-panel"
+			tabindex="-1"
+		></div>
+	
+		
+				</main>
+				<aside
+					id="layout-body-aside"
+					class="layout-body-aside "
+					data-bi-name="aside"
+			  >
+					
+		<div
+			id="ms--additional-resources"
+			class="right-container padding-sm display-none display-block-desktop height-full"
+			data-bi-name="pageactions"
+			role="complementary"
+			aria-label="Additional resources"
+		>
+			<div id="affixed-right-container" data-bi-name="right-column">
+				
+		<nav
+			id="side-doc-outline"
+			class="doc-outline border-bottom padding-bottom-xs margin-bottom-xs"
+			data-bi-name="intopic toc"
+			aria-label="In this article"
+		>
+			<h3>In this article</h3>
+		</nav>
+	
+				<!-- Feedback -->
+				
+			</div>
+		</div>
+	
+			  </aside> <section
+					id="layout-body-flyout"
+					class="layout-body-flyout "
+					data-bi-name="flyout"
+			  >
+					 <div
+	class="height-full border-left background-color-body-medium"
+	id="ask-learn-flyout"
+></div>
+			  </section> <div class="layout-body-footer " data-bi-name="layout-footer">
+		<footer
+			id="footer"
+			data-test-id="footer"
+			data-bi-name="footer"
+			class="footer-layout has-padding has-default-focus border-top  uhf-container"
+			role="contentinfo"
+		>
+			<div class="display-flex gap-xs flex-wrap-wrap is-full-height padding-right-lg-desktop">
+				
+		<a
+			data-mscc-ic="false"
+			href="#"
+			data-bi-name="select-locale"
+			class="locale-selector-link flex-shrink-0 button button-sm button-clear external-link-indicator"
+			id=""
+			title=""
+			><span class="icon" aria-hidden="true"
+				><span class="docon docon-world"></span></span
+			><span class="local-selector-link-text">en-us</span></a
+		>
+	 <div class="ccpa-privacy-link" data-ccpa-privacy-link hidden>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://aka.ms/yourcaliforniaprivacychoices"
+			data-bi-name="your-privacy-choices"
+			class="button button-sm button-clear flex-shrink-0 external-link-indicator"
+			id=""
+			title=""
+			>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 30 14"
+			xml:space="preserve"
+			height="16"
+			width="43"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<path
+				d="M7.4 12.8h6.8l3.1-11.6H7.4C4.2 1.2 1.6 3.8 1.6 7s2.6 5.8 5.8 5.8z"
+				style="fill-rule:evenodd;clip-rule:evenodd;fill:#fff"
+			></path>
+			<path
+				d="M22.6 0H7.4c-3.9 0-7 3.1-7 7s3.1 7 7 7h15.2c3.9 0 7-3.1 7-7s-3.2-7-7-7zm-21 7c0-3.2 2.6-5.8 5.8-5.8h9.9l-3.1 11.6H7.4c-3.2 0-5.8-2.6-5.8-5.8z"
+				style="fill-rule:evenodd;clip-rule:evenodd;fill:#06f"
+			></path>
+			<path
+				d="M24.6 4c.2.2.2.6 0 .8L22.5 7l2.2 2.2c.2.2.2.6 0 .8-.2.2-.6.2-.8 0l-2.2-2.2-2.2 2.2c-.2.2-.6.2-.8 0-.2-.2-.2-.6 0-.8L20.8 7l-2.2-2.2c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0l2.2 2.2L23.8 4c.2-.2.6-.2.8 0z"
+				style="fill:#fff"
+			></path>
+			<path
+				d="M12.7 4.1c.2.2.3.6.1.8L8.6 9.8c-.1.1-.2.2-.3.2-.2.1-.5.1-.7-.1L5.4 7.7c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0L8 8.6l3.8-4.5c.2-.2.6-.2.9 0z"
+				style="fill:#06f"
+			></path>
+		</svg>
+	
+			<span>Your Privacy Choices</span></a
+		>
+	
+	</div>
+				<div class="flex-shrink-0">
+		<div class="dropdown has-caret-up">
+			<button
+				data-test-id="theme-selector-button"
+				class="dropdown-trigger button button-clear button-sm inner-focus theme-dropdown-trigger"
+				aria-controls="{{ themeMenuId }}"
+				aria-expanded="false"
+				title="Theme"
+				data-bi-name="theme"
+			>
+				<span class="icon">
+					<span class="docon docon-sun" aria-hidden="true"></span>
+				</span>
+				<span>Theme</span>
+				<span class="icon expanded-indicator" aria-hidden="true">
+					<span class="docon docon-chevron-down-light"></span>
+				</span>
+			</button>
+			<div class="dropdown-menu" id="{{ themeMenuId }}" role="menu">
+				<ul class="theme-selector padding-xxs" data-test-id="theme-dropdown-menu">
+					<li class="theme display-block">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							data-theme-to="light"
+						>
+							<span class="theme-light margin-right-xxs">
+								<span
+									class="theme-selector-icon border display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span role="menuitem"> Light </span>
+						</button>
+					</li>
+					<li class="theme display-block">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							data-theme-to="dark"
+						>
+							<span class="theme-dark margin-right-xxs">
+								<span
+									class="border theme-selector-icon display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span role="menuitem"> Dark </span>
+						</button>
+					</li>
+					<li class="theme display-block">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							data-theme-to="high-contrast"
+						>
+							<span class="theme-high-contrast margin-right-xxs">
+								<span
+									class="border theme-selector-icon display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span role="menuitem"> High contrast </span>
+						</button>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+			</div>
+			<ul class="links" data-bi-name="footerlinks">
+				<li class="manage-cookies-holder" hidden=""></li>
+				<li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/principles-for-ai-generated-content"
+			data-bi-name="aiDisclaimer"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>AI Disclaimer</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/previous-versions/"
+			data-bi-name="archivelink"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Previous Versions</a
+		>
+	
+	</li> <li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://techcommunity.microsoft.com/t5/microsoft-learn-blog/bg-p/MicrosoftLearnBlog"
+			data-bi-name="bloglink"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Blog</a
+		>
+	
+	</li> <li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/contribute"
+			data-bi-name="contributorGuide"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Contribute</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://go.microsoft.com/fwlink/?LinkId=521839"
+			data-bi-name="privacy"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Privacy</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/legal/termsofuse"
+			data-bi-name="termsofuse"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Terms of Use</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://www.microsoft.com/legal/intellectualproperty/Trademarks/"
+			data-bi-name="trademarks"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Trademarks</a
+		>
+	
+	</li>
+				<li>&copy; Microsoft 2026</li>
+			</ul>
+		</footer>
+	</footer>
+			</body>
+		</html>
