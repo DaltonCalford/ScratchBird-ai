@@ -1,10 +1,62 @@
 {
-  "generated_at_utc": "2026-02-24T17:45:00Z",
-  "git_commit": "TEMPLATE",
-  "status": "FAIL",
+  "cases": [
+    {
+      "allowed": true,
+      "error_code": null,
+      "expected_allowed": true,
+      "mode": "ai_analysis",
+      "normalized_options": {
+        "max_rows": 10,
+        "memory_mb": 256,
+        "timeout_ms": 5000
+      },
+      "rule_id": "MODE-ALLOW-READ-001",
+      "statement_kind": "read"
+    },
+    {
+      "allowed": false,
+      "error_code": "E_POLICY_DENY",
+      "expected_allowed": false,
+      "mode": "ai_analysis",
+      "normalized_options": {
+        "max_rows": 10,
+        "memory_mb": 256,
+        "timeout_ms": 5000
+      },
+      "rule_id": "MODE-DENY-MUTATION-ANALYSIS-001",
+      "statement_kind": "mutation"
+    },
+    {
+      "allowed": false,
+      "error_code": "E_POLICY_DENY",
+      "expected_allowed": false,
+      "mode": "ai_mutation_pending_approval",
+      "normalized_options": {
+        "max_rows": 10,
+        "memory_mb": 256,
+        "timeout_ms": 5000
+      },
+      "rule_id": "MODE-DENY-MUTATION-PENDING-001",
+      "statement_kind": "mutation"
+    },
+    {
+      "allowed": true,
+      "error_code": null,
+      "expected_allowed": true,
+      "mode": "ai_mutation_approved",
+      "normalized_options": {
+        "max_rows": 10,
+        "memory_mb": 256,
+        "timeout_ms": 5000
+      },
+      "rule_id": "MODE-ALLOW-MUTATION-APPROVED-001",
+      "statement_kind": "mutation"
+    }
+  ],
   "check_count": 1,
-  "passed_checks": 0,
-  "failed_checks": [
-    "template placeholder for EVID-08 must be replaced with real evidence"
-  ]
+  "failed_checks": [],
+  "generated_at_utc": "2026-03-07T01:15:09Z",
+  "git_commit": "e7f707ddcd44ded513f065486f9bf871589649e1",
+  "passed_checks": 1,
+  "status": "PASS"
 }

@@ -16,6 +16,10 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Generate conformance artifacts
+        run: |
+          python tools/generate_ai_conformance_artifacts.py --repo-root .
+
       - name: Validate evidence gates
         run: |
-          python tools/validate_evidence_gates.py --repo-root .
+          python tools/validate_evidence_gates.py --repo-root . --spec docs/releases/EARLY_BETA_CONFORMANCE_GATES.md

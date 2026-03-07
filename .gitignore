@@ -13,6 +13,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.egg-info/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -34,6 +35,7 @@ out/
 coverage/
 htmlcov/
 *.log
+Testing/
 
 # Runtime artifacts
 *.pid

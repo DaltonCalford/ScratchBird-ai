@@ -1,10 +1,10 @@
 {
-  "generated_at_utc": "2026-02-24T17:45:00Z",
-  "git_commit": "TEMPLATE",
-  "status": "FAIL",
+  "base_hash": "4f14c9d3ed34b3d44d9a0e86c309df79d3d7863feaadedf8692e22a8ab2d3af3",
+  "changed_hash": "8bce65e05eefb00c13a1b3b66657f2bae005dca4bb0785a69f33e46ad462e28a",
   "check_count": 1,
-  "passed_checks": 0,
-  "failed_checks": [
-    "template placeholder for EVID-07 must be replaced with real evidence"
-  ]
+  "failed_checks": [],
+  "generated_at_utc": "2026-03-07T01:15:09Z",
+  "git_commit": "e7f707ddcd44ded513f065486f9bf871589649e1",
+  "passed_checks": 1,
+  "status": "PASS"
 }

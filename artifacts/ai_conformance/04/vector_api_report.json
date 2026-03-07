@@ -1,10 +1,11 @@
 {
-  "generated_at_utc": "2026-02-24T17:45:00Z",
-  "git_commit": "TEMPLATE",
-  "status": "FAIL",
-  "check_count": 1,
-  "passed_checks": 0,
-  "failed_checks": [
-    "template placeholder for EVID-04 must be replaced with real evidence"
-  ]
+  "check_count": 3,
+  "duration_sec": 0.000245,
+  "failed_checks": [],
+  "generated_at_utc": "2026-03-07T01:15:09Z",
+  "git_commit": "e7f707ddcd44ded513f065486f9bf871589649e1",
+  "passed_checks": 3,
+  "status": "PASS",
+  "tests_run": 4,
+  "top_hit": "doc-1#1"
 }

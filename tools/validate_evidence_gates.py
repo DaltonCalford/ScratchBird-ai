@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--spec",
-        default="docs/specifications/ScratchBird_AI_Specifications/12_External_Evidence_Traceability.md",
+        default="docs/releases/EARLY_BETA_CONFORMANCE_GATES.md",
         help="Path to evidence traceability spec file relative to repo root",
     )
     parser.add_argument(

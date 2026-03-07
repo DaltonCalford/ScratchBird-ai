@@ -1,10 +1,15 @@
 {
-  "generated_at_utc": "2026-02-24T17:45:00Z",
-  "git_commit": "TEMPLATE",
-  "status": "FAIL",
-  "check_count": 1,
-  "passed_checks": 0,
-  "failed_checks": [
-    "template placeholder for EVID-01 must be replaced with real evidence"
-  ]
+  "check_count": 4,
+  "commands": {
+    "capability_matrix_validator": "OK: capability matrix is valid (docs/specifications/drafts/capability-matrix/capability-matrix.v0.json)",
+    "http_contract_selftest": "[smoke] base_url=http://127.0.0.1:39563 dialect=native\n[smoke] healthz OK\n[smoke] compile OK\n[smoke] execute OK\n[smoke] schemas OK (using schema=public)\n[smoke] tables OK (using table=customers)\n[smoke] describe OK\n[smoke] PASS"
+  },
+  "duration_sec": 3.660675,
+  "failed_checks": [],
+  "generated_at_utc": "2026-03-07T01:15:09Z",
+  "git_commit": "e7f707ddcd44ded513f065486f9bf871589649e1",
+  "passed_checks": 4,
+  "status": "PASS",
+  "suite": "baseline_readiness",
+  "tests_run": 74
 }

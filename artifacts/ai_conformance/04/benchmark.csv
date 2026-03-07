@@ -1,2 +1,2 @@
-workload,p95_ms,p99_ms,throughput_vectors_per_sec,status
-TEMPLATE,0,0,0,FAIL
+scenario,iterations,mean_ms,p95_ms,top_hit
+vector_search_sample,25,0.013836,0.016868,doc-1#1

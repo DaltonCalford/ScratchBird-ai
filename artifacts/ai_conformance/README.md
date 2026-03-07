@@ -1,15 +1,14 @@
 # AI Conformance Artifacts
 
-This tree contains release-gating proof artifacts referenced by:
+This tree contains release-gating proof artifacts for the active early-beta release contract:
 
-- `docs/specifications/ScratchBird_AI_Specifications/12_External_Evidence_Traceability.md`
-- `docs/specifications/ScratchBird_AI_Specifications/11_Cross_Spec_Conformance_Matrix.md`
+- `docs/releases/EARLY_BETA_CONFORMANCE_GATES.md`
 
 ## Layout
 
 - `01/summary.json`
 - `02/adapter_parity.json`, `02/test_report.junit.xml`
-- `03/adapter_parity.json`, `03/test_report.junit.xml`
+- `03/service_surface.json`, `03/test_report.junit.xml`
 - `04/vector_api_report.json`, `04/benchmark.csv`
 - `05/hybrid_report.json`, `05/relevance_eval.json`
 - `06/schema_report.json`, `06/compat_report.json`
@@ -19,17 +18,23 @@ This tree contains release-gating proof artifacts referenced by:
 - `10/routing_report.json`, `10/failover_report.json`
 - `11/matrix_status.json`
 
-## Template Note
+## Regeneration
 
-Template JSON files are initialized with `status: FAIL` intentionally.
-They are placeholders and MUST be replaced by real CI-produced evidence before release.
-
-## Validation
+Artifacts are generated from the current checkout and are not meant to remain static forever.
 
 Run:
 
 ```bash
-python tools/validate_evidence_gates.py --repo-root .
+python3 tools/generate_ai_conformance_artifacts.py --repo-root .
+python3 tools/validate_evidence_gates.py --repo-root . --spec docs/releases/EARLY_BETA_CONFORMANCE_GATES.md
 ```
 
-This command enforces artifact shape, age, status rules, and cross-artifact `git_commit` consistency.
+## Validation Rules
+
+The validator enforces:
+
+- required JSON fields
+- `PASS` vs `FAIL` consistency
+- stale-artifact age limits
+- cross-artifact `git_commit` consistency
+- CSV/JUnit structure checks

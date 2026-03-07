@@ -1,10 +1,10 @@
 # ScratchBird-ai
 
-`ScratchBird-ai` is the AI integration layer for ScratchBird.  
-This repository contains the MCP tool server, dialect-aware query orchestration, and adapter infrastructure used to connect AI workflows to ScratchBird parser/compiler and execution paths.
+`ScratchBird-ai` is the AI integration layer for ScratchBird.
+This repository contains the MCP-oriented service layer, dialect-aware query orchestration, HTTP adapter and bridge runtime, and deterministic governance helpers used to connect AI workflows to ScratchBird parser/compiler and execution paths.
 
-Current release track: **initial early beta** (`0.1.0`)  
-Status timestamp: **February 18, 2026**
+Current release track: **initial early beta** (`0.1.0`)
+Status timestamp: **March 7, 2026**
 
 ## Support Policy
 
@@ -12,34 +12,36 @@ Status timestamp: **February 18, 2026**
 
 - Native-only AI support is in scope for this repository.
 - Emulated external engines are out of scope for this repository's AI layer.
-- External engine teams are expected to maintain their own engine-native AI integrations.
 - Non-native dialect requests are rejected with explicit policy errors.
 - ScratchBird engine execution boundary remains `ServerSession`; SQL must be compiled to SBLR before engine submission.
 
-## Early Beta Scope
+## Current Early-Beta Surface
 
-Included in this release:
+Included in the current baseline:
 
-- MCP server scaffold with database-oriented tools.
+- MCP-oriented service orchestration with canonical tool declarations.
 - Safe-by-default policy path with read-only mode and approval-gated mutation mode.
-- Compile/execute split orchestration with artifact identifiers and trace IDs.
-- Dialect capability matrix loader and runtime routing gates.
+- Compile/execute split orchestration with artifact identifiers, trace IDs, and audit bundles.
+- Dialect capability matrix loader and native-only routing gates.
 - HTTP adapter mode (`mock`, `http`, `hybrid`) for parser/executor integration.
-- Local HTTP bridge implementation for adapter contract testing and integration.
-- CI checks for lint/type/build, capability matrix validation, and tests.
+- Local HTTP bridge implementation for adapter contract testing and live driver-backed access.
+- Engine-free vector and hybrid retrieval helpers with deterministic ranking.
+- Deterministic plan hashing, execution-mode evaluation, audit replay, and cluster-routing helpers.
+- Release evidence generation and validation for the implemented early-beta surface.
 
 Not included in this release:
 
-- Production-grade authz, quota billing, and multi-tenant hard isolation.
+- Production-grade authz depth, quota billing, and full multi-tenant hard isolation.
 - AI support for non-native emulated engine modes.
-- Finalized write-governance workflow for production operations.
+- Durable approval-evidence workflow for production mutation governance.
+- Full live-workload certification against production-like ScratchBird deployments.
 
 ## Quick Start
 
 ### 1. Prerequisites
 
 - Python `3.11+`
-- Access to ScratchBird server and Python driver when using live bridge mode
+- Access to a ScratchBird server and Python driver for live bridge mode
 
 ### 2. Install
 
@@ -53,9 +55,11 @@ pip install -e ".[mcp]"
 ### 3. Validate Locally
 
 ```bash
-PYTHONPATH=src python -m unittest discover -s tests -p 'test_*.py'
-PYTHONPATH=src tools/smoke_http_contract.py --mode selftest
-python tools/validate_evidence_gates.py --repo-root .
+PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py'
+PYTHONPATH=src python3 tools/validate_capability_matrix.py
+PYTHONPATH=src python3 tools/smoke_http_contract.py --mode selftest
+python3 tools/generate_ai_conformance_artifacts.py --repo-root .
+python3 tools/validate_evidence_gates.py --repo-root . --spec docs/releases/EARLY_BETA_CONFORMANCE_GATES.md
 ```
 
 ### 4. Run Bridge
@@ -105,7 +109,7 @@ PYTHONPATH=src tools/run_local_stack.sh
 
 Connection-mode note:
 
-- `ScratchBird-ai` now forwards mode-aware transport/signon options to the driver.
+- `ScratchBird-ai` forwards mode-aware transport and signon options to the driver.
 - `ipc-only` and `embedded` require a Python driver/runtime that supports those transport modes.
 
 Reference example:
@@ -119,13 +123,14 @@ Reference example:
 - `src/` - package source (`scratchbird_ai`)
 - `tests/` - unit and integration tests
 - `examples/` - runtime configuration examples
-- `tools/` - local scripts for validation, smoke testing, and stack startup
+- `tools/` - local scripts for validation, evidence generation, and stack startup
 
 ## Documentation Map
 
 - Start here: `docs/README.md`
-- Early beta release notes: `docs/releases/INITIAL_EARLY_BETA_RELEASE_2026-02-18.md`
-- Current status: `docs/status/EARLY_BETA_STATUS_2026-02-18.md`
+- Current status: `docs/status/EARLY_BETA_STATUS_2026-03-07.md`
+- Known gaps: `docs/status/EARLY_BETA_KNOWN_GAPS_2026-03-07.md`
+- Release gate contract: `docs/releases/EARLY_BETA_CONFORMANCE_GATES.md`
 - Getting started guide: `docs/guides/GETTING_STARTED_EARLY_BETA.md`
-- Draft/final specs: `docs/specifications/`
 - Delivery backlog: `docs/planning/PHASED_IMPLEMENTATION_BACKLOG.md`
+- Draft/final specs: `docs/specifications/`

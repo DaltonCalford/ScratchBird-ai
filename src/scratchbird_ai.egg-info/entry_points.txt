@@ -1,2 +1,0 @@
-[console_scripts]
-scratchbird-ai-mcp = scratchbird_ai.mcp_server:main
