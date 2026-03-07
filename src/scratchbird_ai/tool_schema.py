@@ -84,6 +84,40 @@ _QUERY_EMBEDDING_SCHEMA: dict[str, Any] = {
     "minItems": 1,
 }
 
+_EMBEDDING_RECORD_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "vector_id": {"type": "string"},
+        "embedding": _QUERY_EMBEDDING_SCHEMA,
+        "metadata": _FREEFORM_OBJECT_SCHEMA,
+    },
+    "required": ["vector_id", "embedding"],
+    "additionalProperties": False,
+}
+
+_GENERATED_EMBEDDING_RECORD_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "vector_id": {"type": "string"},
+        "text": {"type": "string"},
+        "metadata": _FREEFORM_OBJECT_SCHEMA,
+    },
+    "required": ["vector_id", "text"],
+    "additionalProperties": False,
+}
+
+_PROVIDER_CONFIG_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "provider_profile_id": {"type": "string"},
+        "provider_id": {"type": "string"},
+        "model": {"type": "string"},
+        "api_key_env_var": {"type": "string"},
+        "api_key": {"type": "string"},
+    },
+    "additionalProperties": True,
+}
+
 _TOOL_DESCRIPTORS: dict[str, dict[str, Any]] = {
     "get_capabilities": {
         "tool_name": "get_capabilities",
@@ -408,6 +442,184 @@ _TOOL_DESCRIPTORS: dict[str, dict[str, Any]] = {
         "required_security_scopes": ["query:read"],
         "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
         "operation_mapping": "explain_query",
+        "retryable": False,
+    },
+    "create_vector_index": {
+        "tool_name": "create_vector_index",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "Create a retrieval index descriptor in provisioning state.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "index_id": {"type": "string"},
+                "dimension": {"type": "integer"},
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+                "profile_id": {"type": "string"},
+            },
+            "required": ["index_id", "dimension", "security_context"],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:write"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "create_vector_index",
+        "retryable": False,
+    },
+    "list_vector_indexes": {
+        "tool_name": "list_vector_indexes",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "List retrieval indexes visible to the caller tenant.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+                "include_deleted": {"type": "boolean"},
+            },
+            "required": ["security_context"],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:read"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "list_vector_indexes",
+        "retryable": True,
+    },
+    "describe_vector_index": {
+        "tool_name": "describe_vector_index",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "Describe a retrieval index and its lifecycle descriptor.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "index_id": {"type": "string"},
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+            },
+            "required": ["index_id", "security_context"],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:read"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "describe_vector_index",
+        "retryable": True,
+    },
+    "add_embeddings": {
+        "tool_name": "add_embeddings",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "Ingest caller-supplied embeddings into a retrieval index.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "index_id": {"type": "string"},
+                "dimension": {"type": "integer"},
+                "records": {"type": "array", "items": _EMBEDDING_RECORD_SCHEMA, "minItems": 1},
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+            },
+            "required": ["index_id", "dimension", "records", "security_context"],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:write"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "add_embeddings",
+        "retryable": True,
+    },
+    "add_generated_embeddings": {
+        "tool_name": "add_generated_embeddings",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "Acquire provider-generated embeddings and ingest them into a retrieval index.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "index_id": {"type": "string"},
+                "dimension": {"type": "integer"},
+                "records": {
+                    "type": "array",
+                    "items": _GENERATED_EMBEDDING_RECORD_SCHEMA,
+                    "minItems": 1,
+                },
+                "provider_config": _PROVIDER_CONFIG_SCHEMA,
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+            },
+            "required": [
+                "index_id",
+                "dimension",
+                "records",
+                "provider_config",
+                "security_context",
+            ],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:write"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "add_generated_embeddings",
+        "retryable": True,
+    },
+    "delete_embeddings": {
+        "tool_name": "delete_embeddings",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "Delete embeddings from a retrieval index.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "index_id": {"type": "string"},
+                "vector_ids": {"type": "array", "items": {"type": "string"}},
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+            },
+            "required": ["index_id", "vector_ids", "security_context"],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:write"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "delete_embeddings",
+        "retryable": True,
+    },
+    "reindex_vector_index": {
+        "tool_name": "reindex_vector_index",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "Advance a retrieval index through an explicit reindex lifecycle transition.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "index_id": {"type": "string"},
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+            },
+            "required": ["index_id", "security_context"],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:write"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "reindex_vector_index",
+        "retryable": False,
+    },
+    "delete_vector_index": {
+        "tool_name": "delete_vector_index",
+        "tool_version": TOOL_DESCRIPTOR_VERSION,
+        "description": "Delete a retrieval index and move it to the deleted lifecycle state.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "index_id": {"type": "string"},
+                "security_context": _SECURITY_CONTEXT_SCHEMA,
+            },
+            "required": ["index_id", "security_context"],
+            "additionalProperties": False,
+        },
+        "output_mode": "json_object",
+        "output_schema": None,
+        "required_security_scopes": ["retrieval:write"],
+        "mode_constraints": ["ai_analysis", "ai_mutation_pending_approval", "ai_mutation_approved"],
+        "operation_mapping": "delete_vector_index",
         "retryable": False,
     },
     "vector_search": {

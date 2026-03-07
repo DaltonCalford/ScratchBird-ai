@@ -67,6 +67,9 @@ class ToolSchemaTests(unittest.TestCase):
         self.assertIn("execute_readonly_query", tools)
         self.assertEqual(tools["execute_readonly_query"]["output_mode"], "json_object")
         self.assertIn("get_provider_profiles", tools)
+        self.assertIn("create_vector_index", tools)
+        self.assertIn("add_generated_embeddings", tools)
+        self.assertIn("list_vector_indexes", tools)
 
     def test_validate_tool_arguments_rejects_unknown_field(self) -> None:
         with self.assertRaises(ToolContractError) as ctx:
@@ -83,6 +86,33 @@ class ToolSchemaTests(unittest.TestCase):
                 },
             )
         self.assertEqual(ctx.exception.error_code, "E_TOOL_INPUT_INVALID")
+
+    def test_validate_add_generated_embeddings_arguments(self) -> None:
+        normalized = validate_tool_arguments(
+            "add_generated_embeddings",
+            {
+                "index_id": "idx_generated",
+                "dimension": 4,
+                "records": [
+                    {
+                        "vector_id": "doc-1#1",
+                        "text": "north overdue invoice",
+                        "metadata": {"document_id": "doc-1"},
+                    }
+                ],
+                "provider_config": {
+                    "provider_profile_id": "openai_embeddings_v1",
+                    "model": "text-embedding-3-small",
+                    "api_key": "secret-inline",
+                },
+                "security_context": {
+                    "tenant_id": "tenant_a",
+                    "actor_id": "actor_a",
+                },
+            },
+        )
+        self.assertEqual(normalized["dimension"], 4)
+        self.assertEqual(normalized["provider_config"]["model"], "text-embedding-3-small")
 
     def test_normalize_openai_tool_call(self) -> None:
         normalized = normalize_tool_invocation(

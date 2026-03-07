@@ -12,6 +12,7 @@ Implementation code for ScratchBird AI integration.
 - `scratchbird_ai/provider_profiles.py` - direct provider compatibility profile inventory
 - `scratchbird_ai/remote_sessions.py` - remote MCP session establishment and auth binding
 - `scratchbird_ai/operation_streams.py` - long-running operation, event, continuation, and cancellation support
+- `scratchbird_ai/retrieval.py` - retrieval index lifecycle, persistence, and engine-free vector/hybrid search
 - `scratchbird_ai/tool_schema.py` - canonical tool descriptors, argument validation, provider normalization, and structured-output validation
 - `scratchbird_ai/router.py` - dialect routing + capability gating
 - `scratchbird_ai/policy.py` - read-only and approval policy enforcement
@@ -22,7 +23,7 @@ Implementation code for ScratchBird AI integration.
 ## Local Usage
 
 - Validate matrix: `./tools/validate_capability_matrix.py`
-- Run tests: `python3 -m unittest discover -s tests -p "test_*.py"`
+- Run tests: `PYTHONPATH=src python3 -m unittest discover -s tests -p "test_*.py"`
 - Run MCP server (after installing optional deps):
   - `pip install .[mcp]`
   - `scratchbird-ai-mcp`
@@ -36,6 +37,7 @@ Environment variables:
 - `SCRATCHBIRD_AI_HTTP_TIMEOUT_SEC` - adapter HTTP timeout in seconds
 - `SCRATCHBIRD_AI_HTTP_API_TOKEN` - optional Bearer token
 - `SCRATCHBIRD_AI_HTTP_DIALECTS` - comma-separated dialects for HTTP mode in `hybrid` (default `native`)
+- `SCRATCHBIRD_AI_RETRIEVAL_CATALOG_PATH` - optional JSON catalog path for persistent retrieval indexes
 - `SCRATCHBIRD_AI_REMOTE_MCP_AUTH_TOKEN` - required Bearer token for remote MCP session establishment
 - `SCRATCHBIRD_AI_REMOTE_MCP_SESSION_TTL_SEC` - remote session TTL in seconds
 - `SCRATCHBIRD_AI_REMOTE_MCP_HEARTBEAT_INTERVAL_SEC` - remote session heartbeat interval in seconds

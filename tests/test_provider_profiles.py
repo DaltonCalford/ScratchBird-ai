@@ -72,6 +72,29 @@ class ProviderProfileTests(unittest.TestCase):
         self.assertEqual(response["status"], "success")
         self.assertEqual(response["result"]["row_count"], 1)
 
+    def test_openai_provider_profile_can_ingest_generated_embeddings(self) -> None:
+        response = self.service.invoke_provider_tool(
+            provider_profile_id="openai_tool_calling_v0",
+            payload={
+                "request_id": "req_provider_openai_generated",
+                "id": "call_provider_openai_generated",
+                "function": {
+                    "name": "add_generated_embeddings",
+                    "arguments": (
+                        '{"index_id":"idx_provider_generated","dimension":4,"records":['
+                        '{"vector_id":"doc-1#1","text":"north overdue invoice",'
+                        '"metadata":{"document_id":"doc-1"}}],"provider_config":'
+                        '{"provider_profile_id":"openai_embeddings_v1","model":"text-embedding-3-small",'
+                        '"api_key":"secret-inline"},"security_context":'
+                        '{"tenant_id":"tenant_a","actor_id":"actor_a"}}'
+                    ),
+                },
+            },
+        )
+        self.assertEqual(response["status"], "success")
+        self.assertEqual(response["result"]["provider_ref"], "inline:redacted")
+        self.assertEqual(response["result"]["index"]["profile_id"], "provider_generated_embeddings_v0")
+
 
 if __name__ == "__main__":
     unittest.main()

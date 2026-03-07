@@ -51,12 +51,23 @@ _CANONICAL_READ_OPS = (
     "explain_query",
 )
 
-_RETRIEVAL_OPS = (
-    "add_embeddings",
-    "delete_embeddings",
+_RETRIEVAL_QUERY_OPS = (
+    "list_vector_indexes",
+    "describe_vector_index",
     "vector_search",
     "hybrid_search",
 )
+
+_RETRIEVAL_WRITE_OPS = (
+    "create_vector_index",
+    "add_embeddings",
+    "add_generated_embeddings",
+    "delete_embeddings",
+    "reindex_vector_index",
+    "delete_vector_index",
+)
+
+_RETRIEVAL_OPS = _RETRIEVAL_QUERY_OPS + _RETRIEVAL_WRITE_OPS
 
 _MUTATION_OPS = ("execute_mutation",)
 
@@ -82,7 +93,7 @@ _INTERFACE_PROFILES = (
         transport="stdio_jsonrpc",
         session_model="process_local_tool_session",
         auth_model="forwarded_security_context",
-        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + ("vector_search", "hybrid_search"),
+        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + _RETRIEVAL_OPS,
         streaming_mode="request_response",
         evidence_gate="EVID-03",
     ),
@@ -94,7 +105,7 @@ _INTERFACE_PROFILES = (
         transport="https_json_request_response",
         session_model="remote_session_bound",
         auth_model="token_or_session_bound_identity",
-        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + ("vector_search", "hybrid_search"),
+        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + _RETRIEVAL_OPS,
         streaming_mode="server_stream",
     ),
     InterfaceProfileDescriptor(
@@ -105,7 +116,7 @@ _INTERFACE_PROFILES = (
         transport="in_process_sdk",
         session_model="adapter_request_scoped",
         auth_model="forwarded_security_context",
-        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + ("vector_search", "hybrid_search"),
+        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + _RETRIEVAL_QUERY_OPS,
         streaming_mode="request_response",
     ),
     InterfaceProfileDescriptor(
@@ -116,7 +127,7 @@ _INTERFACE_PROFILES = (
         transport="in_process_sdk",
         session_model="adapter_request_scoped",
         auth_model="forwarded_security_context",
-        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + ("vector_search", "hybrid_search"),
+        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + _RETRIEVAL_QUERY_OPS,
         streaming_mode="request_response",
     ),
     InterfaceProfileDescriptor(
@@ -127,7 +138,7 @@ _INTERFACE_PROFILES = (
         transport="in_process_sdk",
         session_model="adapter_request_scoped",
         auth_model="forwarded_security_context",
-        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + ("vector_search", "hybrid_search"),
+        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + _RETRIEVAL_QUERY_OPS,
         streaming_mode="request_response",
     ),
     InterfaceProfileDescriptor(
@@ -138,7 +149,7 @@ _INTERFACE_PROFILES = (
         transport="provider_http_api",
         session_model="provider_request_scoped",
         auth_model="provider_auth_plus_forwarded_security_context",
-        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS,
+        operation_set=_CANONICAL_READ_OPS + _MUTATION_OPS + _RETRIEVAL_OPS,
         streaming_mode="request_response",
         evidence_gate="EVID-13",
     ),
@@ -154,9 +165,8 @@ _INTERFACE_PROFILES = (
             "execute_readonly_query",
             "execute_mutation",
             "explain_query",
-            "vector_search",
-            "hybrid_search",
-        ),
+        )
+        + _RETRIEVAL_QUERY_OPS,
         streaming_mode="server_stream",
     ),
     InterfaceProfileDescriptor(

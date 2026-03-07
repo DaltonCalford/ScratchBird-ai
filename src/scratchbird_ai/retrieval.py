@@ -2,13 +2,33 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
+import os
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from .deterministic import deterministic_id
-from .tool_schema import ToolContractError, require_security_context
+from .tool_schema import require_security_context
+
+
+RETRIEVAL_COMPATIBILITY_VERSION = "2026-03-07"
+_VALID_INDEX_STATES = {
+    "provisioning",
+    "ready",
+    "reindexing",
+    "deleting",
+    "deleted",
+    "failed",
+}
+_SUPPORTED_RETRIEVAL_PROFILES = {
+    "client_supplied_embeddings_v0",
+    "provider_generated_embeddings_v0",
+}
 
 
 class RetrievalError(RuntimeError):
@@ -33,12 +53,106 @@ class VectorRecord:
     embedding: tuple[float, ...]
     metadata: dict[str, Any]
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "vector_id": self.vector_id,
+            "embedding": list(self.embedding),
+            "metadata": dict(self.metadata),
+        }
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> "VectorRecord":
+        metadata_raw = payload.get("metadata", {})
+        metadata = dict(metadata_raw) if isinstance(metadata_raw, dict) else {}
+        return cls(
+            vector_id=str(payload.get("vector_id", "")),
+            embedding=_normalize_embedding(payload.get("embedding")),
+            metadata=metadata,
+        )
+
+
+@dataclass(slots=True)
+class IndexDescriptor:
+    index_id: str
+    profile_id: str
+    dimension: int
+    distance_metric: str
+    backend_kind: str
+    state: str
+    tenant_scope: str
+    created_at_utc: str
+    updated_at_utc: str
+    owner_tenant_id: str
+    compatibility_version: str = RETRIEVAL_COMPATIBILITY_VERSION
+    record_count: int = 0
+    last_ingest_profile_id: str | None = None
+    provider_ref: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "index_id": self.index_id,
+            "profile_id": self.profile_id,
+            "dimension": self.dimension,
+            "distance_metric": self.distance_metric,
+            "backend_kind": self.backend_kind,
+            "state": self.state,
+            "tenant_scope": self.tenant_scope,
+            "created_at_utc": self.created_at_utc,
+            "updated_at_utc": self.updated_at_utc,
+            "compatibility_version": self.compatibility_version,
+            "record_count": self.record_count,
+        }
+        if self.last_ingest_profile_id:
+            payload["last_ingest_profile_id"] = self.last_ingest_profile_id
+        if self.provider_ref:
+            payload["provider_ref"] = self.provider_ref
+        return payload
+
+    def to_catalog_dict(self) -> dict[str, Any]:
+        payload = self.to_dict()
+        payload["owner_tenant_id"] = self.owner_tenant_id
+        return payload
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> "IndexDescriptor":
+        return cls(
+            index_id=str(payload.get("index_id", "")),
+            profile_id=str(payload.get("profile_id", "client_supplied_embeddings_v0")),
+            dimension=int(payload.get("dimension", 0)),
+            distance_metric=str(payload.get("distance_metric", "cosine")),
+            backend_kind=str(payload.get("backend_kind", "in_memory")),
+            state=str(payload.get("state", "provisioning")),
+            tenant_scope=str(payload.get("tenant_scope", "tenant_bound")),
+            created_at_utc=str(payload.get("created_at_utc", "")),
+            updated_at_utc=str(payload.get("updated_at_utc", "")),
+            owner_tenant_id=str(payload.get("owner_tenant_id", "")),
+            compatibility_version=str(
+                payload.get("compatibility_version", RETRIEVAL_COMPATIBILITY_VERSION)
+            ),
+            record_count=int(payload.get("record_count", 0)),
+            last_ingest_profile_id=(
+                str(payload["last_ingest_profile_id"])
+                if payload.get("last_ingest_profile_id") is not None
+                else None
+            ),
+            provider_ref=(
+                str(payload["provider_ref"]) if payload.get("provider_ref") is not None else None
+            ),
+        )
+
 
 @dataclass(slots=True)
 class VectorIndex:
-    index_id: str
-    dimension: int
+    descriptor: IndexDescriptor
     records: dict[str, VectorRecord]
+
+    @property
+    def index_id(self) -> str:
+        return self.descriptor.index_id
+
+    @property
+    def dimension(self) -> int:
+        return self.descriptor.dimension
 
 
 def _safe_float(value: Any) -> float:
@@ -57,6 +171,10 @@ def _safe_float(value: Any) -> float:
     return out
 
 
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
 def _normalize_embedding(raw: Any, *, dimension: int | None = None) -> tuple[float, ...]:
     if not isinstance(raw, list) or not raw:
         raise RetrievalError(
@@ -73,6 +191,66 @@ def _normalize_embedding(raw: Any, *, dimension: int | None = None) -> tuple[flo
             ),
         )
     return values
+
+
+def _normalize_dimension(value: Any) -> int:
+    try:
+        dimension = int(value)
+    except (TypeError, ValueError):
+        raise RetrievalError(
+            error_code="E_INVALID_ARGUMENT",
+            message="dimension must be an integer",
+        ) from None
+    if dimension < 1:
+        raise RetrievalError(
+            error_code="E_INVALID_ARGUMENT",
+            message="dimension must be >= 1",
+        )
+    return dimension
+
+
+def _normalize_index_state(state: str) -> str:
+    normalized = str(state).strip().lower()
+    if normalized not in _VALID_INDEX_STATES:
+        raise RetrievalError(
+            error_code="E_INDEX_STATE_INVALID",
+            message=f"unsupported index state: {state}",
+        )
+    return normalized
+
+
+def _ensure_supported_profile(profile_id: str) -> str:
+    normalized = str(profile_id).strip() or "client_supplied_embeddings_v0"
+    if normalized not in _SUPPORTED_RETRIEVAL_PROFILES:
+        raise RetrievalError(
+            error_code="E_COMPATIBILITY_MISMATCH",
+            message=f"unsupported retrieval profile: {profile_id}",
+        )
+    return normalized
+
+
+def _generate_provider_embedding(
+    *,
+    text: str,
+    dimension: int,
+    provider_profile_id: str,
+    model: str,
+) -> tuple[float, ...]:
+    values: list[float] = []
+    counter = 0
+    seed = f"{provider_profile_id}|{model}|{text}"
+    while len(values) < dimension:
+        digest = hashlib.sha256(f"{seed}|{counter}".encode("utf-8")).digest()
+        counter += 1
+        for offset in range(0, len(digest), 4):
+            chunk = digest[offset : offset + 4]
+            if len(chunk) < 4:
+                continue
+            raw = int.from_bytes(chunk, "big")
+            values.append(round(((raw / 4_294_967_295.0) * 2.0) - 1.0, 6))
+            if len(values) == dimension:
+                break
+    return tuple(values)
 
 
 def _cosine_similarity(a: tuple[float, ...], b: tuple[float, ...]) -> float:
@@ -106,16 +284,378 @@ def _match_filters(metadata: dict[str, Any], filters: dict[str, Any]) -> bool:
 
 
 class InMemoryRetrievalStore:
-    def __init__(self) -> None:
+    def __init__(self, *, catalog_path: str | None = None) -> None:
+        self._catalog_path = Path(catalog_path).expanduser() if catalog_path else None
         self._indexes: dict[str, VectorIndex] = {}
+        self._load_catalog()
 
-    def _require_index(self, index_id: str) -> VectorIndex:
+    def _load_catalog(self) -> None:
+        if self._catalog_path is None or not self._catalog_path.exists():
+            return
+        raw = self._catalog_path.read_text(encoding="utf-8").strip()
+        if not raw:
+            return
+        payload = json.loads(raw)
+        indexes_raw = payload.get("indexes", [])
+        if not isinstance(indexes_raw, list):
+            raise RetrievalError(
+                error_code="E_INVALID_ARGUMENT",
+                message="retrieval catalog indexes must be an array",
+            )
+        for item in indexes_raw:
+            if not isinstance(item, dict):
+                continue
+            descriptor = IndexDescriptor.from_dict(item.get("descriptor", {}))
+            records_payload = item.get("records", [])
+            records: dict[str, VectorRecord] = {}
+            if isinstance(records_payload, list):
+                for record_payload in records_payload:
+                    if not isinstance(record_payload, dict):
+                        continue
+                    record = VectorRecord.from_dict(record_payload)
+                    if record.vector_id:
+                        records[record.vector_id] = record
+            descriptor.record_count = len(records)
+            self._indexes[descriptor.index_id] = VectorIndex(descriptor=descriptor, records=records)
+
+    def _persist_catalog(self) -> None:
+        if self._catalog_path is None:
+            return
+        payload = {
+            "catalog_version": RETRIEVAL_COMPATIBILITY_VERSION,
+            "indexes": [
+                {
+                    "descriptor": index.descriptor.to_catalog_dict(),
+                    "records": [
+                        record.to_dict()
+                        for record in sorted(index.records.values(), key=lambda row: row.vector_id)
+                    ],
+                }
+                for index in sorted(self._indexes.values(), key=lambda row: row.index_id)
+            ],
+        }
+        self._catalog_path.parent.mkdir(parents=True, exist_ok=True)
+        self._catalog_path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+    def _require_index(
+        self,
+        index_id: str,
+        *,
+        tenant_id: str | None = None,
+        allow_deleted: bool = False,
+    ) -> VectorIndex:
         if index_id not in self._indexes:
             raise RetrievalError(
                 error_code="E_INDEX_NOT_FOUND",
                 message=f"vector index not found: {index_id}",
             )
-        return self._indexes[index_id]
+        index = self._indexes[index_id]
+        if tenant_id is not None and index.descriptor.owner_tenant_id != tenant_id:
+            raise RetrievalError(
+                error_code="E_POLICY_DENY",
+                message="cross-tenant vector index access denied",
+                policy_rule_id="RLS-TENANT-INDEX-001",
+            )
+        state = index.descriptor.state
+        if state == "deleted" and not allow_deleted:
+            raise RetrievalError(
+                error_code="E_INDEX_NOT_FOUND",
+                message=f"vector index not found: {index_id}",
+            )
+        if state == "deleting":
+            raise RetrievalError(
+                error_code="E_INDEX_STATE_INVALID",
+                message=f"vector index {index_id} is being deleted",
+            )
+        return index
+
+    def _build_descriptor(
+        self,
+        *,
+        index_id: str,
+        profile_id: str,
+        dimension: int,
+        tenant_id: str,
+        state: str = "provisioning",
+        provider_ref: str | None = None,
+    ) -> IndexDescriptor:
+        created_at = _utc_now()
+        return IndexDescriptor(
+            index_id=index_id,
+            profile_id=profile_id,
+            dimension=dimension,
+            distance_metric="cosine",
+            backend_kind="in_memory_json" if self._catalog_path else "in_memory",
+            state=_normalize_index_state(state),
+            tenant_scope="tenant_bound",
+            created_at_utc=created_at,
+            updated_at_utc=created_at,
+            owner_tenant_id=tenant_id,
+            record_count=0,
+            last_ingest_profile_id=profile_id,
+            provider_ref=provider_ref,
+        )
+
+    def _set_index_state(self, index: VectorIndex, state: str) -> None:
+        index.descriptor.state = _normalize_index_state(state)
+        index.descriptor.updated_at_utc = _utc_now()
+
+    def _touch_descriptor(
+        self,
+        index: VectorIndex,
+        *,
+        state: str | None = None,
+        last_ingest_profile_id: str | None = None,
+        provider_ref: str | None = None,
+    ) -> None:
+        if state is not None:
+            index.descriptor.state = _normalize_index_state(state)
+        if last_ingest_profile_id is not None:
+            index.descriptor.last_ingest_profile_id = last_ingest_profile_id
+        if provider_ref is not None:
+            index.descriptor.provider_ref = provider_ref
+        index.descriptor.record_count = len(index.records)
+        index.descriptor.updated_at_utc = _utc_now()
+
+    def _ensure_index(
+        self,
+        *,
+        index_id: str,
+        dimension: int,
+        tenant_id: str,
+        profile_id: str,
+        provider_ref: str | None = None,
+    ) -> VectorIndex:
+        normalized_profile = _ensure_supported_profile(profile_id)
+        index = self._indexes.get(index_id)
+        if index is None or index.descriptor.state == "deleted":
+            descriptor = self._build_descriptor(
+                index_id=index_id,
+                profile_id=normalized_profile,
+                dimension=dimension,
+                tenant_id=tenant_id,
+                provider_ref=provider_ref,
+            )
+            index = VectorIndex(descriptor=descriptor, records={})
+            self._indexes[index_id] = index
+            self._persist_catalog()
+            return index
+        if index.descriptor.owner_tenant_id != tenant_id:
+            raise RetrievalError(
+                error_code="E_POLICY_DENY",
+                message="cross-tenant vector index access denied",
+                policy_rule_id="RLS-TENANT-INDEX-001",
+            )
+        if index.dimension != dimension:
+            raise RetrievalError(
+                error_code="E_DIMENSION_MISMATCH",
+                message=(
+                    f"index {index_id} dimension {index.dimension} does not match "
+                    f"request dimension {dimension}"
+                ),
+            )
+        if index.descriptor.profile_id != normalized_profile:
+            raise RetrievalError(
+                error_code="E_COMPATIBILITY_MISMATCH",
+                message=(
+                    f"index {index_id} profile {index.descriptor.profile_id} does not match "
+                    f"request profile {normalized_profile}"
+                ),
+            )
+        if (
+            provider_ref is not None
+            and index.descriptor.provider_ref is not None
+            and index.descriptor.provider_ref != provider_ref
+        ):
+            raise RetrievalError(
+                error_code="E_COMPATIBILITY_MISMATCH",
+                message=(
+                    f"index {index_id} provider_ref {index.descriptor.provider_ref} does not match "
+                    f"request provider_ref {provider_ref}"
+                ),
+            )
+        if index.descriptor.state == "failed":
+            raise RetrievalError(
+                error_code="E_INDEX_STATE_INVALID",
+                message=f"vector index {index_id} is in failed state",
+            )
+        return index
+
+    def _resolve_provider_config(self, provider_config: dict[str, Any]) -> tuple[str, str, str]:
+        provider_profile_id = str(
+            provider_config.get("provider_profile_id")
+            or provider_config.get("provider_id")
+            or "embedding_provider"
+        ).strip()
+        model = str(provider_config.get("model") or "default").strip() or "default"
+        env_var = str(provider_config.get("api_key_env_var", "")).strip()
+        inline_secret = str(provider_config.get("api_key", "")).strip()
+        if env_var:
+            if not os.getenv(env_var, "").strip():
+                raise RetrievalError(
+                    error_code="E_PROVIDER_AUTH_MISSING",
+                    message=f"provider credential env var is empty: {env_var}",
+                )
+            return provider_profile_id, model, f"env:{env_var}"
+        if inline_secret:
+            return provider_profile_id, model, "inline:redacted"
+        raise RetrievalError(
+            error_code="E_PROVIDER_AUTH_MISSING",
+            message="provider_config must contain api_key_env_var or api_key",
+        )
+
+    def create_index(
+        self,
+        *,
+        index_id: str,
+        dimension: int,
+        security_context: dict[str, Any],
+        profile_id: str = "client_supplied_embeddings_v0",
+    ) -> dict[str, Any]:
+        security = require_security_context({"security_context": security_context})
+        normalized_dimension = _normalize_dimension(dimension)
+        tenant_id = security["tenant_id"]
+        if not str(index_id).strip():
+            raise RetrievalError(
+                error_code="E_INVALID_ARGUMENT",
+                message="index_id must be non-empty",
+            )
+        descriptor = self._build_descriptor(
+            index_id=str(index_id),
+            profile_id=_ensure_supported_profile(profile_id),
+            dimension=normalized_dimension,
+            tenant_id=tenant_id,
+        )
+        existing = self._indexes.get(descriptor.index_id)
+        if existing is not None and existing.descriptor.state != "deleted":
+            if existing.descriptor.owner_tenant_id != tenant_id:
+                raise RetrievalError(
+                    error_code="E_POLICY_DENY",
+                    message="cross-tenant vector index access denied",
+                    policy_rule_id="RLS-TENANT-INDEX-001",
+                )
+            raise RetrievalError(
+                error_code="E_ALREADY_EXISTS",
+                message=f"vector index already exists: {descriptor.index_id}",
+            )
+        self._indexes[descriptor.index_id] = VectorIndex(descriptor=descriptor, records={})
+        self._persist_catalog()
+        trace_id = deterministic_id(
+            "tr",
+            {
+                "operation": "create_index",
+                "index_id": descriptor.index_id,
+                "tenant_id": tenant_id,
+                "profile_id": descriptor.profile_id,
+            },
+        )
+        return {"index": descriptor.to_dict(), "trace_id": trace_id}
+
+    def list_indexes(
+        self,
+        *,
+        security_context: dict[str, Any],
+        include_deleted: bool = False,
+    ) -> dict[str, Any]:
+        security = require_security_context({"security_context": security_context})
+        tenant_id = security["tenant_id"]
+        rows = [
+            index.descriptor.to_dict()
+            for index in sorted(self._indexes.values(), key=lambda item: item.index_id)
+            if index.descriptor.owner_tenant_id == tenant_id
+            and (include_deleted or index.descriptor.state != "deleted")
+        ]
+        trace_id = deterministic_id(
+            "tr",
+            {
+                "operation": "list_indexes",
+                "tenant_id": tenant_id,
+                "index_ids": [row["index_id"] for row in rows],
+            },
+        )
+        return {"indexes": rows, "trace_id": trace_id}
+
+    def describe_index(
+        self,
+        *,
+        index_id: str,
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        security = require_security_context({"security_context": security_context})
+        index = self._require_index(str(index_id), tenant_id=security["tenant_id"], allow_deleted=True)
+        trace_id = deterministic_id(
+            "tr",
+            {
+                "operation": "describe_index",
+                "index_id": index.index_id,
+                "tenant_id": security["tenant_id"],
+            },
+        )
+        return {"index": index.descriptor.to_dict(), "trace_id": trace_id}
+
+    def reindex_index(
+        self,
+        *,
+        index_id: str,
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        security = require_security_context({"security_context": security_context})
+        index = self._require_index(str(index_id), tenant_id=security["tenant_id"])
+        previous_state = index.descriptor.state
+        self._set_index_state(index, "reindexing")
+        self._persist_catalog()
+        self._touch_descriptor(
+            index,
+            state="ready" if index.records else "provisioning",
+            last_ingest_profile_id=index.descriptor.profile_id,
+        )
+        self._persist_catalog()
+        trace_id = deterministic_id(
+            "tr",
+            {
+                "operation": "reindex_index",
+                "index_id": index.index_id,
+                "tenant_id": security["tenant_id"],
+                "previous_state": previous_state,
+            },
+        )
+        return {
+            "index": index.descriptor.to_dict(),
+            "previous_state": previous_state,
+            "trace_id": trace_id,
+        }
+
+    def delete_index(
+        self,
+        *,
+        index_id: str,
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        security = require_security_context({"security_context": security_context})
+        index = self._require_index(str(index_id), tenant_id=security["tenant_id"], allow_deleted=True)
+        previous_state = index.descriptor.state
+        self._set_index_state(index, "deleting")
+        self._persist_catalog()
+        index.records.clear()
+        self._touch_descriptor(index, state="deleted")
+        self._persist_catalog()
+        trace_id = deterministic_id(
+            "tr",
+            {
+                "operation": "delete_index",
+                "index_id": index.index_id,
+                "tenant_id": security["tenant_id"],
+                "previous_state": previous_state,
+            },
+        )
+        return {
+            "index": index.descriptor.to_dict(),
+            "previous_state": previous_state,
+            "trace_id": trace_id,
+        }
 
     def add_embeddings(
         self,
@@ -131,28 +671,16 @@ class InMemoryRetrievalStore:
                 error_code="E_INVALID_ARGUMENT",
                 message="records must be non-empty",
             )
-        if dimension < 1:
-            raise RetrievalError(
-                error_code="E_INVALID_ARGUMENT",
-                message="dimension must be >= 1",
-            )
-
-        index = self._indexes.get(index_id)
-        if index is None:
-            index = VectorIndex(index_id=index_id, dimension=dimension, records={})
-            self._indexes[index_id] = index
-        elif index.dimension != dimension:
-            raise RetrievalError(
-                error_code="E_DIMENSION_MISMATCH",
-                message=(
-                    f"index {index_id} dimension {index.dimension} does not match "
-                    f"request dimension {dimension}"
-                ),
-            )
-
+        normalized_dimension = _normalize_dimension(dimension)
         accepted = 0
         rejected = 0
         tenant_id = security["tenant_id"]
+        index = self._ensure_index(
+            index_id=str(index_id),
+            dimension=normalized_dimension,
+            tenant_id=tenant_id,
+            profile_id="client_supplied_embeddings_v0",
+        )
         for item in records:
             if not isinstance(item, dict):
                 rejected += 1
@@ -178,6 +706,12 @@ class InMemoryRetrievalStore:
                 metadata=metadata,
             )
             accepted += 1
+        self._touch_descriptor(
+            index,
+            state="ready" if accepted else index.descriptor.state,
+            last_ingest_profile_id="client_supplied_embeddings_v0",
+        )
+        self._persist_catalog()
 
         ingest_id = deterministic_id(
             "ing",
@@ -185,7 +719,7 @@ class InMemoryRetrievalStore:
                 "index_id": index_id,
                 "tenant_id": tenant_id,
                 "accepted": accepted,
-                "dimension": dimension,
+                "dimension": normalized_dimension,
             },
         )
         trace_id = deterministic_id(
@@ -203,6 +737,117 @@ class InMemoryRetrievalStore:
             "rejected": rejected,
             "ingest_id": ingest_id,
             "trace_id": trace_id,
+            "profile_id": index.descriptor.profile_id,
+            "index": index.descriptor.to_dict(),
+        }
+
+    def add_generated_embeddings(
+        self,
+        *,
+        index_id: str,
+        dimension: int,
+        records: list[dict[str, Any]],
+        provider_config: dict[str, Any],
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        security = require_security_context({"security_context": security_context})
+        if not records:
+            raise RetrievalError(
+                error_code="E_INVALID_ARGUMENT",
+                message="records must be non-empty",
+            )
+        if not isinstance(provider_config, dict):
+            raise RetrievalError(
+                error_code="E_INVALID_ARGUMENT",
+                message="provider_config must be an object",
+            )
+        normalized_dimension = _normalize_dimension(dimension)
+        provider_profile_id, model, provider_ref = self._resolve_provider_config(provider_config)
+        tenant_id = security["tenant_id"]
+        index = self._ensure_index(
+            index_id=str(index_id),
+            dimension=normalized_dimension,
+            tenant_id=tenant_id,
+            profile_id="provider_generated_embeddings_v0",
+            provider_ref=provider_ref,
+        )
+
+        accepted = 0
+        rejected = 0
+        for item in records:
+            if not isinstance(item, dict):
+                rejected += 1
+                continue
+            vector_id = str(item.get("vector_id", "")).strip()
+            if not vector_id:
+                rejected += 1
+                continue
+            metadata_raw = item.get("metadata", {})
+            metadata = dict(metadata_raw) if isinstance(metadata_raw, dict) else {}
+            text = str(item.get("text") or metadata.get("text", "")).strip()
+            if not text:
+                rejected += 1
+                continue
+            record_tenant = str(metadata.get("tenant_id", tenant_id)).strip() or tenant_id
+            if record_tenant != tenant_id:
+                raise RetrievalError(
+                    error_code="E_POLICY_DENY",
+                    message="cross-tenant embedding insert denied",
+                    policy_rule_id="RLS-TENANT-INSERT-001",
+                )
+            metadata["tenant_id"] = tenant_id
+            metadata.setdefault("text", text)
+            index.records[vector_id] = VectorRecord(
+                vector_id=vector_id,
+                embedding=_generate_provider_embedding(
+                    text=text,
+                    dimension=index.dimension,
+                    provider_profile_id=provider_profile_id,
+                    model=model,
+                ),
+                metadata=metadata,
+            )
+            accepted += 1
+
+        self._touch_descriptor(
+            index,
+            state="ready" if accepted else index.descriptor.state,
+            last_ingest_profile_id="provider_generated_embeddings_v0",
+            provider_ref=provider_ref,
+        )
+        self._persist_catalog()
+
+        ingest_id = deterministic_id(
+            "ing",
+            {
+                "index_id": index_id,
+                "tenant_id": tenant_id,
+                "accepted": accepted,
+                "provider_profile_id": provider_profile_id,
+                "model": model,
+            },
+        )
+        trace_id = deterministic_id(
+            "tr",
+            {
+                "operation": "add_generated_embeddings",
+                "index_id": index_id,
+                "tenant_id": tenant_id,
+                "ingest_id": ingest_id,
+                "provider_profile_id": provider_profile_id,
+                "model": model,
+            },
+        )
+        return {
+            "index_id": str(index_id),
+            "accepted": accepted,
+            "rejected": rejected,
+            "ingest_id": ingest_id,
+            "trace_id": trace_id,
+            "profile_id": index.descriptor.profile_id,
+            "provider_profile_id": provider_profile_id,
+            "provider_ref": provider_ref,
+            "index": index.descriptor.to_dict(),
         }
 
     def delete_embeddings(
@@ -219,7 +864,7 @@ class InMemoryRetrievalStore:
                 message="vector_ids must be an array",
             )
 
-        index = self._require_index(index_id)
+        index = self._require_index(index_id, tenant_id=security["tenant_id"])
         tenant_id = security["tenant_id"]
         deleted = 0
         not_found = 0
@@ -237,6 +882,12 @@ class InMemoryRetrievalStore:
                 )
             del index.records[vector_id]
             deleted += 1
+        self._touch_descriptor(
+            index,
+            state="ready" if index.records else "provisioning",
+            last_ingest_profile_id=index.descriptor.profile_id,
+        )
+        self._persist_catalog()
 
         trace_id = deterministic_id(
             "tr",
@@ -253,6 +904,7 @@ class InMemoryRetrievalStore:
             "deleted": deleted,
             "not_found": not_found,
             "trace_id": trace_id,
+            "index": index.descriptor.to_dict(),
         }
 
     def vector_search(
@@ -266,7 +918,7 @@ class InMemoryRetrievalStore:
         security_context: dict[str, Any],
     ) -> dict[str, Any]:
         security = require_security_context({"security_context": security_context})
-        index = self._require_index(index_id)
+        index = self._require_index(index_id, tenant_id=security["tenant_id"])
         embedding = _normalize_embedding(query_embedding, dimension=index.dimension)
         if top_k < 1 or top_k > 200:
             raise RetrievalError(
@@ -310,6 +962,7 @@ class InMemoryRetrievalStore:
             "results": rows,
             "trace_id": trace_id,
             "rls_applied": True,
+            "index": index.descriptor.to_dict(),
         }
 
     def hybrid_search(

@@ -11,6 +11,13 @@ from scratchbird_ai.settings import RuntimeSettings
 class ServiceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.service = build_default_service()
+        self.security_context = {
+            "tenant_id": "tenant_a",
+            "actor_id": "actor_a",
+            "roles": ["analyst"],
+            "session_id": "sess_1",
+            "context_version": 1,
+        }
 
     def test_run_query_read_only(self) -> None:
         resp = self.service.run_query(
@@ -112,6 +119,11 @@ class ServiceTests(unittest.TestCase):
         self.assertIn("get_provider_profiles", capabilities["supports"]["canonical_tools"])
         self.assertIn("get_compatibility_manifest", capabilities["supports"]["canonical_tools"])
         self.assertIn("negotiate_compatibility", capabilities["supports"]["canonical_tools"])
+        self.assertIn("create_vector_index", capabilities["supports"]["canonical_tools"])
+        self.assertIn("add_generated_embeddings", capabilities["supports"]["canonical_tools"])
+        self.assertIn("list_vector_indexes", capabilities["supports"]["canonical_tools"])
+        self.assertTrue(capabilities["supports"]["retrieval_catalog"])
+        self.assertTrue(capabilities["supports"]["provider_generated_embeddings"])
         profiles = {
             profile["profile_id"]: profile for profile in capabilities["interface_profiles"]
         }
@@ -144,6 +156,9 @@ class ServiceTests(unittest.TestCase):
         self.assertIn("execute_readonly_query", names)
         self.assertIn("get_tool_descriptors", names)
         self.assertIn("get_provider_profiles", names)
+        self.assertIn("create_vector_index", names)
+        self.assertIn("add_generated_embeddings", names)
+        self.assertIn("list_vector_indexes", names)
 
     def test_get_provider_profiles_returns_catalog(self) -> None:
         catalog = self.service.get_provider_profiles()
@@ -565,6 +580,58 @@ class ServiceTests(unittest.TestCase):
             sql_filter={"metadata": {"document_id": "doc-1"}},
         )
         self.assertEqual(hybrid["results"][0]["document_id"], "doc-1")
+
+    def test_retrieval_catalog_and_generated_ingest_service_surface(self) -> None:
+        created = self.service.create_vector_index(
+            index_id="idx_catalog",
+            dimension=4,
+            security_context=self.security_context,
+        )
+        self.assertEqual(created["index"]["state"], "provisioning")
+
+        generated = self.service.add_generated_embeddings(
+            index_id="idx_generated",
+            dimension=4,
+            records=[
+                {
+                    "vector_id": "doc-generated#1",
+                    "text": "north overdue invoice",
+                    "metadata": {"document_id": "doc-generated"},
+                }
+            ],
+            provider_config={
+                "provider_profile_id": "openai_embeddings_v1",
+                "model": "text-embedding-3-small",
+                "api_key": "secret-inline",
+            },
+            security_context=self.security_context,
+        )
+        self.assertEqual(generated["provider_ref"], "inline:redacted")
+        self.assertEqual(generated["index"]["state"], "ready")
+
+        listed = self.service.list_vector_indexes(security_context=self.security_context)
+        listed_ids = {row["index_id"] for row in listed["indexes"]}
+        self.assertIn("idx_catalog", listed_ids)
+        self.assertIn("idx_generated", listed_ids)
+
+        described = self.service.describe_vector_index(
+            index_id="idx_generated",
+            security_context=self.security_context,
+        )
+        self.assertEqual(described["index"]["profile_id"], "provider_generated_embeddings_v0")
+        self.assertEqual(described["index"]["provider_ref"], "inline:redacted")
+
+        reindexed = self.service.reindex_vector_index(
+            index_id="idx_generated",
+            security_context=self.security_context,
+        )
+        self.assertEqual(reindexed["index"]["state"], "ready")
+
+        deleted = self.service.delete_vector_index(
+            index_id="idx_catalog",
+            security_context=self.security_context,
+        )
+        self.assertEqual(deleted["index"]["state"], "deleted")
 
     def test_compile_artifact_id_is_deterministic(self) -> None:
         context = {

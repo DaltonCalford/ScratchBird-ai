@@ -21,6 +21,7 @@ class RuntimeSettings:
     http_timeout_sec: float = 10.0
     http_api_token: str | None = None
     http_dialects: tuple[str, ...] = ("native",)
+    retrieval_catalog_path: str | None = None
     remote_mcp_auth_token: str | None = None
     remote_mcp_session_ttl_sec: int = 900
     remote_mcp_heartbeat_interval_sec: int = 30
@@ -59,6 +60,7 @@ def load_runtime_settings() -> RuntimeSettings:
         timeout = 10.0
 
     api_token = os.getenv("SCRATCHBIRD_AI_HTTP_API_TOKEN", "").strip() or None
+    retrieval_catalog_path = os.getenv("SCRATCHBIRD_AI_RETRIEVAL_CATALOG_PATH", "").strip() or None
 
     dialects_raw = os.getenv(
         "SCRATCHBIRD_AI_HTTP_DIALECTS",
@@ -96,6 +98,7 @@ def load_runtime_settings() -> RuntimeSettings:
         http_timeout_sec=timeout,
         http_api_token=api_token,
         http_dialects=dialects,
+        retrieval_catalog_path=retrieval_catalog_path,
         remote_mcp_auth_token=remote_auth_token,
         remote_mcp_session_ttl_sec=remote_ttl,
         remote_mcp_heartbeat_interval_sec=remote_heartbeat,

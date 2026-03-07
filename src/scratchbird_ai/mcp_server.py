@@ -308,6 +308,164 @@ def create_server(service: ScratchBirdAIService | None = None):
         )
 
     @mcp.tool()
+    def create_vector_index(
+        index_id: str,
+        dimension: int,
+        security_context: dict,
+        profile_id: str = "client_supplied_embeddings_v0",
+    ) -> Any:
+        payload = {
+            "index_id": index_id,
+            "dimension": dimension,
+            "security_context": security_context,
+            "profile_id": profile_id,
+        }
+        return _tool_call(
+            tool_name="create_vector_index",
+            payload=payload,
+            fn=lambda: svc.create_vector_index(
+                index_id=index_id,
+                dimension=dimension,
+                security_context=security_context,
+                profile_id=profile_id,
+            ),
+        )
+
+    @mcp.tool()
+    def list_vector_indexes(
+        security_context: dict,
+        include_deleted: bool = False,
+    ) -> Any:
+        payload = {
+            "security_context": security_context,
+            "include_deleted": include_deleted,
+        }
+        return _tool_call(
+            tool_name="list_vector_indexes",
+            payload=payload,
+            fn=lambda: svc.list_vector_indexes(
+                security_context=security_context,
+                include_deleted=include_deleted,
+            ),
+        )
+
+    @mcp.tool()
+    def describe_vector_index(index_id: str, security_context: dict) -> Any:
+        payload = {
+            "index_id": index_id,
+            "security_context": security_context,
+        }
+        return _tool_call(
+            tool_name="describe_vector_index",
+            payload=payload,
+            fn=lambda: svc.describe_vector_index(
+                index_id=index_id,
+                security_context=security_context,
+            ),
+        )
+
+    @mcp.tool()
+    def add_embeddings(
+        index_id: str,
+        dimension: int,
+        records: list[dict],
+        security_context: dict,
+    ) -> Any:
+        payload = {
+            "index_id": index_id,
+            "dimension": dimension,
+            "record_count": len(records),
+            "security_context": security_context,
+        }
+        return _tool_call(
+            tool_name="add_embeddings",
+            payload=payload,
+            fn=lambda: svc.add_embeddings(
+                index_id=index_id,
+                dimension=dimension,
+                records=records,
+                security_context=security_context,
+            ),
+        )
+
+    @mcp.tool()
+    def add_generated_embeddings(
+        index_id: str,
+        dimension: int,
+        records: list[dict],
+        provider_config: dict,
+        security_context: dict,
+    ) -> Any:
+        provider_payload = dict(provider_config)
+        if "api_key" in provider_payload:
+            provider_payload["api_key"] = "***"
+        payload = {
+            "index_id": index_id,
+            "dimension": dimension,
+            "record_count": len(records),
+            "provider_config": provider_payload,
+            "security_context": security_context,
+        }
+        return _tool_call(
+            tool_name="add_generated_embeddings",
+            payload=payload,
+            fn=lambda: svc.add_generated_embeddings(
+                index_id=index_id,
+                dimension=dimension,
+                records=records,
+                provider_config=provider_config,
+                security_context=security_context,
+            ),
+        )
+
+    @mcp.tool()
+    def delete_embeddings(index_id: str, vector_ids: list[str], security_context: dict) -> Any:
+        payload = {
+            "index_id": index_id,
+            "vector_ids": vector_ids,
+            "security_context": security_context,
+        }
+        return _tool_call(
+            tool_name="delete_embeddings",
+            payload=payload,
+            fn=lambda: svc.delete_embeddings(
+                index_id=index_id,
+                vector_ids=vector_ids,
+                security_context=security_context,
+            ),
+        )
+
+    @mcp.tool()
+    def reindex_vector_index(index_id: str, security_context: dict) -> Any:
+        payload = {
+            "index_id": index_id,
+            "security_context": security_context,
+        }
+        return _tool_call(
+            tool_name="reindex_vector_index",
+            payload=payload,
+            fn=lambda: svc.reindex_vector_index(
+                index_id=index_id,
+                security_context=security_context,
+            ),
+        )
+
+    @mcp.tool()
+    def delete_vector_index(index_id: str, security_context: dict) -> Any:
+        payload = {
+            "index_id": index_id,
+            "security_context": security_context,
+        }
+        return _tool_call(
+            tool_name="delete_vector_index",
+            payload=payload,
+            fn=lambda: svc.delete_vector_index(
+                index_id=index_id,
+                security_context=security_context,
+            ),
+        )
+
+    @mcp.tool()
     def vector_search(
         index_id: str,
         query_embedding: list[float],

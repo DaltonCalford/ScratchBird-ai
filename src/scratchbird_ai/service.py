@@ -90,6 +90,8 @@ class ScratchBirdAIService:
                 "read_only_mode": True,
                 "mutation_requires_approval": True,
                 "compatibility_negotiation": True,
+                "retrieval_catalog": True,
+                "provider_generated_embeddings": True,
                 "structured_output_modes": ["none", "json_object", "json_schema"],
                 "vector_search": True,
                 "hybrid_search": True,
@@ -106,6 +108,14 @@ class ScratchBirdAIService:
                     "execute_readonly_query",
                     "execute_mutation",
                     "explain_query",
+                    "create_vector_index",
+                    "list_vector_indexes",
+                    "describe_vector_index",
+                    "add_embeddings",
+                    "add_generated_embeddings",
+                    "delete_embeddings",
+                    "reindex_vector_index",
+                    "delete_vector_index",
                     "vector_search",
                     "hybrid_search",
                 ],
@@ -132,6 +142,43 @@ class ScratchBirdAIService:
         return build_compatibility_manifest(
             adapter_mode=self.adapter_mode,
             matrix_version=str(self.router.matrix.get("version", "unknown")),
+        )
+
+    def create_vector_index(
+        self,
+        *,
+        index_id: str,
+        dimension: int,
+        security_context: dict[str, Any],
+        profile_id: str = "client_supplied_embeddings_v0",
+    ) -> dict[str, Any]:
+        return self._retrieval.create_index(
+            index_id=index_id,
+            dimension=dimension,
+            security_context=security_context,
+            profile_id=profile_id,
+        )
+
+    def list_vector_indexes(
+        self,
+        *,
+        security_context: dict[str, Any],
+        include_deleted: bool = False,
+    ) -> dict[str, Any]:
+        return self._retrieval.list_indexes(
+            security_context=security_context,
+            include_deleted=include_deleted,
+        )
+
+    def describe_vector_index(
+        self,
+        *,
+        index_id: str,
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self._retrieval.describe_index(
+            index_id=index_id,
+            security_context=security_context,
         )
 
     def negotiate_compatibility(self, request: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -1071,6 +1118,23 @@ class ScratchBirdAIService:
             security_context=security_context,
         )
 
+    def add_generated_embeddings(
+        self,
+        *,
+        index_id: str,
+        dimension: int,
+        records: list[dict[str, Any]],
+        provider_config: dict[str, Any],
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self._retrieval.add_generated_embeddings(
+            index_id=index_id,
+            dimension=dimension,
+            records=records,
+            provider_config=provider_config,
+            security_context=security_context,
+        )
+
     def delete_embeddings(
         self,
         *,
@@ -1081,6 +1145,28 @@ class ScratchBirdAIService:
         return self._retrieval.delete_embeddings(
             index_id=index_id,
             vector_ids=vector_ids,
+            security_context=security_context,
+        )
+
+    def reindex_vector_index(
+        self,
+        *,
+        index_id: str,
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self._retrieval.reindex_index(
+            index_id=index_id,
+            security_context=security_context,
+        )
+
+    def delete_vector_index(
+        self,
+        *,
+        index_id: str,
+        security_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self._retrieval.delete_index(
+            index_id=index_id,
             security_context=security_context,
         )
 
@@ -1274,6 +1360,54 @@ class ScratchBirdAIService:
                     else {}
                 ),
             )
+        if tool_name == "create_vector_index":
+            return self.create_vector_index(
+                index_id=str(arguments["index_id"]),
+                dimension=int(arguments["dimension"]),
+                security_context=dict(arguments["security_context"]),
+                profile_id=str(arguments.get("profile_id", "client_supplied_embeddings_v0")),
+            )
+        if tool_name == "list_vector_indexes":
+            return self.list_vector_indexes(
+                security_context=dict(arguments["security_context"]),
+                include_deleted=bool(arguments.get("include_deleted", False)),
+            )
+        if tool_name == "describe_vector_index":
+            return self.describe_vector_index(
+                index_id=str(arguments["index_id"]),
+                security_context=dict(arguments["security_context"]),
+            )
+        if tool_name == "add_embeddings":
+            return self.add_embeddings(
+                index_id=str(arguments["index_id"]),
+                dimension=int(arguments["dimension"]),
+                records=list(arguments["records"]),
+                security_context=dict(arguments["security_context"]),
+            )
+        if tool_name == "add_generated_embeddings":
+            return self.add_generated_embeddings(
+                index_id=str(arguments["index_id"]),
+                dimension=int(arguments["dimension"]),
+                records=list(arguments["records"]),
+                provider_config=dict(arguments["provider_config"]),
+                security_context=dict(arguments["security_context"]),
+            )
+        if tool_name == "delete_embeddings":
+            return self.delete_embeddings(
+                index_id=str(arguments["index_id"]),
+                vector_ids=list(arguments["vector_ids"]),
+                security_context=dict(arguments["security_context"]),
+            )
+        if tool_name == "reindex_vector_index":
+            return self.reindex_vector_index(
+                index_id=str(arguments["index_id"]),
+                security_context=dict(arguments["security_context"]),
+            )
+        if tool_name == "delete_vector_index":
+            return self.delete_vector_index(
+                index_id=str(arguments["index_id"]),
+                security_context=dict(arguments["security_context"]),
+            )
         if tool_name == "vector_search":
             return self.vector_search(
                 index_id=str(arguments["index_id"]),
@@ -1381,11 +1515,15 @@ def build_default_service(settings: RuntimeSettings | None = None) -> ScratchBir
         supported_protocol_versions=runtime_settings.remote_mcp_protocol_versions,
         supported_transports=runtime_settings.remote_mcp_supported_transports,
     )
+    retrieval_store = InMemoryRetrievalStore(
+        catalog_path=runtime_settings.retrieval_catalog_path,
+    )
     return ScratchBirdAIService(
         router=router,
         policy_engine=policy_engine,
         adapters=adapters,
         adapter_mode=mode,
+        retrieval_store=retrieval_store,
         remote_session_manager=remote_session_manager,
     )
 
