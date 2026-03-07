@@ -1,0 +1,15 @@
+{
+  "check_count": 6,
+  "duration_sec": 0.00086,
+  "failed_checks": [],
+  "generated_at_utc": "2026-03-07T12:19:41Z",
+  "git_commit": "446861d753c929d74c285331439a0a68f3951a96",
+  "passed_checks": 6,
+  "profiles": [
+    "openai_tool_calling_v0",
+    "anthropic_tool_use_v0",
+    "gemini_function_calling_v0"
+  ],
+  "status": "PASS",
+  "tests_run": 4
+}

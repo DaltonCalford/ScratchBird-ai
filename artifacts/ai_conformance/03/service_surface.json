@@ -1,13 +1,13 @@
 {
   "adapter_mode": "mock",
   "check_count": 3,
-  "duration_sec": 0.002999,
+  "duration_sec": 0.006633,
   "failed_checks": [],
-  "generated_at_utc": "2026-03-07T01:15:09Z",
-  "git_commit": "e7f707ddcd44ded513f065486f9bf871589649e1",
+  "generated_at_utc": "2026-03-07T12:19:41Z",
+  "git_commit": "446861d753c929d74c285331439a0a68f3951a96",
   "passed_checks": 3,
   "status": "PASS",
   "suite": "service_surface_contract",
-  "tests_run": 23,
+  "tests_run": 35,
   "tool_schema_version": "1.0"
 }

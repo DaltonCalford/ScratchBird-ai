@@ -13,6 +13,8 @@ It is intentionally aligned to the current repository scope:
 - native-only AI workflows
 - MCP-oriented service orchestration
 - HTTP adapter and bridge runtime
+- framework-compatible adapter shims over the canonical service surface
+- direct provider tool-calling compatibility profiles
 - deterministic policy, retrieval, plan, audit, and routing helpers
 
 ## 2. Release Candidate Rules
@@ -43,6 +45,8 @@ python tools/validate_evidence_gates.py --repo-root . --spec docs/releases/EARLY
 | `EVID-09` | Audit bundle determinism | `docs/specifications/drafts/SECURITY_GOVERNANCE_OBSERVABILITY_SPEC.md` | Audit bundles hash deterministically and replay detects tamper or policy mismatch | Signed or externally attested bundles are produced and verified in CI | `artifacts/ai_conformance/09/audit_replay_report.json`, `artifacts/ai_conformance/09/attestation_report.json` |
 | `EVID-10` | Cluster-aware routing | `docs/specifications/drafts/AI_PLATFORM_ARCHITECTURE_SPEC.md`, `docs/planning/PHASED_IMPLEMENTATION_BACKLOG.md` | Routing, failover, merge ordering, and shard filtering pass deterministically | Real multi-shard routing with SLO-aware policies is exercised under load | `artifacts/ai_conformance/10/routing_report.json`, `artifacts/ai_conformance/10/failover_report.json` |
 | `EVID-11` | Release integrity and doc alignment | `docs/README.md`, `docs/status/README.md`, `docs/planning/README.md`, `artifacts/ai_conformance/README.md` | Release docs, artifact layout, and validator expectations align on the current surface | CI publishes a release dashboard that summarizes blocker reasons without manual curation | `artifacts/ai_conformance/11/matrix_status.json` |
+| `EVID-12` | Framework adapter parity | `docs/specifications/drafts/LANGCHAIN_ADAPTER_SPEC.md`, `docs/specifications/drafts/LLAMAINDEX_ADAPTER_SPEC.md`, `docs/specifications/drafts/SEMANTIC_KERNEL_ADAPTER_SPEC.md` | LangChain, LlamaIndex, and Semantic Kernel wrappers execute canonical query, explain, and retrieval flows without semantic drift | Framework-specific live compatibility windows are exercised against installed runtimes on the release commit | `artifacts/ai_conformance/12/framework_parity.json`, `artifacts/ai_conformance/12/test_report.junit.xml` |
+| `EVID-13` | Direct provider tool-calling parity | `docs/specifications/drafts/DIRECT_PROVIDER_COMPATIBILITY_PROFILES_SPEC.md`, `docs/specifications/drafts/MODEL_TOOL_CALLING_AND_STRUCTURED_OUTPUT_SPEC.md` | OpenAI-style, Anthropic-style, and Gemini-style provider payloads normalize to the same canonical execution results | Installed provider SDK/runtime compatibility profiles are exercised against pinned client versions on the release commit | `artifacts/ai_conformance/13/provider_parity.json`, `artifacts/ai_conformance/13/test_report.junit.xml` |
 
 ## 4. Proof Artifact Rules
 

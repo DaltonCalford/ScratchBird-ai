@@ -10,14 +10,29 @@ from .adapters.http import HttpJsonClient, make_http_dialect_adapter
 from .adapters.mock import make_mock_dialect_adapter
 from .audit_bundle import create_audit_bundle, security_context_hash
 from .capability_matrix import load_capability_matrix
+from .compatibility import build_compatibility_manifest, negotiate_compatibility
 from .contracts import CompileResult, ExecuteResult, QueryResponse
 from .deterministic import deterministic_id
+from .interface_profiles import INTERFACE_COMPATIBILITY_VERSION, get_interface_profiles
+from .operation_streams import LongRunningOperationManager
 from .plan_introspection import build_plan_response
 from .policy import PolicyDeniedError, PolicyDecision, PolicyEngine
+from .provider_profiles import get_provider_profile_descriptor, get_provider_profiles
+from .remote_sessions import RemoteSessionManager
 from .retrieval import InMemoryRetrievalStore
 from .router import DialectRouter
 from .settings import RuntimeSettings, load_runtime_settings
-from .tool_schema import ToolContractError, TOOL_SCHEMA_VERSION, require_security_context, validate_options
+from .tool_schema import (
+    TOOL_DESCRIPTOR_VERSION,
+    ToolContractError,
+    TOOL_SCHEMA_VERSION,
+    get_tool_descriptors,
+    map_exception_to_error,
+    normalize_tool_invocation,
+    normalize_tool_response,
+    require_security_context,
+    validate_options,
+)
 
 
 @dataclass(slots=True)
@@ -42,6 +57,8 @@ class ScratchBirdAIService:
         adapters: dict[str, DialectAdapter],
         adapter_mode: str = "mock",
         retrieval_store: InMemoryRetrievalStore | None = None,
+        remote_session_manager: RemoteSessionManager | None = None,
+        long_running_manager: LongRunningOperationManager | None = None,
     ) -> None:
         self.router = router
         self.policy_engine = policy_engine
@@ -51,23 +68,37 @@ class ScratchBirdAIService:
         self._execution_attempts: dict[str, int] = {}
         self._audit_store: list[dict[str, Any]] = []
         self._retrieval = retrieval_store or InMemoryRetrievalStore()
+        self._remote_sessions = remote_session_manager or RemoteSessionManager(auth_token=None)
+        self._long_running = long_running_manager or LongRunningOperationManager()
 
     def get_capabilities(self) -> dict[str, Any]:
+        interface_profiles = get_interface_profiles()
         return {
             "service": "scratchbird-ai",
             "version": "0.1.0",
             "query_entrypoint_policy": "parser_compiler_first",
             "adapter_mode": self.adapter_mode,
             "tool_schema_version": TOOL_SCHEMA_VERSION,
+            "tool_descriptor_version": TOOL_DESCRIPTOR_VERSION,
+            "compatibility_version": INTERFACE_COMPATIBILITY_VERSION,
+            "compatibility_manifest_version": INTERFACE_COMPATIBILITY_VERSION,
+            "interface_profiles": interface_profiles,
+            "provider_profiles": get_provider_profiles(),
             "supports": {
                 "metadata": True,
                 "compile_execute_split": True,
                 "read_only_mode": True,
                 "mutation_requires_approval": True,
+                "compatibility_negotiation": True,
+                "structured_output_modes": ["none", "json_object", "json_schema"],
                 "vector_search": True,
                 "hybrid_search": True,
                 "canonical_tools": [
                     "get_capabilities",
+                    "get_tool_descriptors",
+                    "get_provider_profiles",
+                    "get_compatibility_manifest",
+                    "negotiate_compatibility",
                     "list_dialects",
                     "list_schemas",
                     "list_tables",
@@ -89,6 +120,424 @@ class ScratchBirdAIService:
                 },
             },
             "matrix_version": self.router.matrix.get("version", "unknown"),
+        }
+
+    def get_tool_descriptors(self) -> dict[str, Any]:
+        return {"tools": get_tool_descriptors()}
+
+    def get_provider_profiles(self) -> dict[str, Any]:
+        return {"profiles": get_provider_profiles()}
+
+    def get_compatibility_manifest(self) -> dict[str, Any]:
+        return build_compatibility_manifest(
+            adapter_mode=self.adapter_mode,
+            matrix_version=str(self.router.matrix.get("version", "unknown")),
+        )
+
+    def negotiate_compatibility(self, request: dict[str, Any] | None = None) -> dict[str, Any]:
+        return negotiate_compatibility(
+            request,
+            adapter_mode=self.adapter_mode,
+            matrix_version=str(self.router.matrix.get("version", "unknown")),
+        )
+
+    def open_remote_session(self, request: dict[str, Any] | None = None) -> dict[str, Any]:
+        return self._remote_sessions.open_session(
+            request,
+            capability_advertisement=self._remote_capabilities(),
+        )
+
+    def invoke_remote_tool(
+        self,
+        *,
+        session_id: str,
+        request_id: str,
+        method: str,
+        params: dict[str, Any] | None = None,
+        client_operation_timeout_ms: int | None = None,
+        stream_requested: bool = False,
+        allow_background_execution: bool = False,
+        cancellation_token: str | None = None,
+    ) -> dict[str, Any]:
+        try:
+            session = self._remote_sessions.require_session(session_id)
+            invocation_payload = self._build_remote_tool_payload(
+                session=session,
+                session_id=session_id,
+                request_id=request_id,
+                method=method,
+                params=params,
+                client_operation_timeout_ms=client_operation_timeout_ms,
+            )
+            if stream_requested:
+                if session.negotiated_transport != "https_sse_server_stream":
+                    raise ToolContractError(
+                        error_code="E_STREAM_NOT_SUPPORTED",
+                        message=(
+                            "stream_requested requires negotiated transport "
+                            "https_sse_server_stream"
+                        ),
+                        policy_rule_id="REMOTE-SESSION-STREAM-001",
+                    )
+                operation = self._long_running.create_operation(
+                    session_id=session_id,
+                    request_id=request_id,
+                    method=method,
+                    trace_id=deterministic_id(
+                        "tr",
+                        {
+                            "session_id": session_id,
+                            "request_id": request_id,
+                            "method": method,
+                            "stream_requested": True,
+                        },
+                    ),
+                    security_context=session.security_context,
+                    cancellation_token=cancellation_token,
+                )
+                self._long_running.mark_running(
+                    operation.operation_id,
+                    payload={
+                        "method": method,
+                        "allow_background_execution": bool(allow_background_execution),
+                    },
+                )
+                envelope = self.invoke_tool(
+                    payload=invocation_payload,
+                    interface_profile_id="streaming_async_v0",
+                )
+                for notice in envelope["notices"]:
+                    self._long_running.record_notice(
+                        operation.operation_id,
+                        notice=notice,
+                    )
+                if envelope["status"] == "success":
+                    self._long_running.complete(
+                        operation.operation_id,
+                        payload={
+                            "result": envelope["result"],
+                            "structured_output": envelope["structured_output"],
+                        },
+                    )
+                    operation_events = self._long_running.get_events(
+                        operation_id=operation.operation_id,
+                        requested_by=session.security_context,
+                    )
+                    return {
+                        "session_id": session_id,
+                        "request_id": request_id,
+                        "status": "success",
+                        "trace_id": operation.trace_id,
+                        "result": None,
+                        "error": None,
+                        "operation_id": operation.operation_id,
+                        "operation_state": operation_events["operation_state"],
+                        "stream_channel": operation.stream_channel,
+                        "resumable": operation.resumable,
+                        "continuation_token": operation.continuation_token,
+                        "notices": [],
+                    }
+                self._long_running.fail(
+                    operation.operation_id,
+                    payload={"error": envelope["error"]},
+                )
+                return {
+                    "session_id": session_id,
+                    "request_id": request_id,
+                    "status": "error",
+                    "trace_id": operation.trace_id,
+                    "result": None,
+                    "error": envelope["error"],
+                    "operation_id": operation.operation_id,
+                    "operation_state": "failed",
+                    "stream_channel": operation.stream_channel,
+                    "resumable": operation.resumable,
+                    "continuation_token": operation.continuation_token,
+                    "notices": [],
+                }
+
+            envelope = self.invoke_tool(
+                payload=invocation_payload,
+                interface_profile_id="mcp_remote_v0",
+            )
+            return {
+                "session_id": session_id,
+                "request_id": request_id,
+                "status": envelope["status"],
+                "trace_id": envelope["trace_id"],
+                "result": envelope["result"],
+                "error": envelope["error"],
+                "operation_id": None,
+                "operation_state": "completed" if envelope["status"] == "success" else "failed",
+                "stream_channel": None,
+                "resumable": False,
+                "continuation_token": None,
+                "notices": envelope["notices"],
+            }
+        except Exception as exc:
+            error = map_exception_to_error(
+                exc,
+                trace_seed={
+                    "session_id": session_id,
+                    "request_id": request_id,
+                    "method": method,
+                    "remote_invocation_error": True,
+                },
+            )
+            return {
+                "session_id": session_id,
+                "request_id": request_id,
+                "status": "error",
+                "trace_id": error["trace_id"],
+                "result": None,
+                "error": error,
+                "operation_id": None,
+                "operation_state": "failed",
+                "stream_channel": None,
+                "resumable": False,
+                "continuation_token": None,
+                "notices": [],
+            }
+
+    def close_remote_session(self, *, session_id: str, request_id: str | None = None) -> dict[str, Any]:
+        return self._remote_sessions.close_session(session_id=session_id, request_id=request_id)
+
+    def poll_remote_operation(
+        self,
+        *,
+        session_id: str,
+        operation_id: str,
+        continuation_token: str | None = None,
+    ) -> dict[str, Any]:
+        try:
+            session = self._remote_sessions.require_session(session_id)
+            events = self._long_running.get_events(
+                operation_id=operation_id,
+                requested_by=session.security_context,
+                continuation_token=continuation_token,
+            )
+            return {
+                "session_id": session_id,
+                "operation_id": operation_id,
+                "request_id": events["request_id"],
+                "trace_id": events["trace_id"],
+                "operation_state": events["operation_state"],
+                "stream_channel": events["stream_channel"],
+                "resumable": events["resumable"],
+                "continuation_token": events["continuation_token"],
+                "terminal": events["terminal"],
+                "events": events["events"],
+                "error": None,
+            }
+        except Exception as exc:
+            error = map_exception_to_error(
+                exc,
+                trace_seed={
+                    "session_id": session_id,
+                    "operation_id": operation_id,
+                    "poll_remote_operation_error": True,
+                },
+            )
+            return {
+                "session_id": session_id,
+                "operation_id": operation_id,
+                "request_id": None,
+                "trace_id": error["trace_id"],
+                "operation_state": "failed",
+                "stream_channel": None,
+                "resumable": False,
+                "continuation_token": continuation_token,
+                "terminal": True,
+                "events": [],
+                "error": error,
+            }
+
+    def cancel_remote_operation(
+        self,
+        *,
+        session_id: str,
+        operation_id: str,
+        request_id: str,
+        reason: str,
+    ) -> dict[str, Any]:
+        try:
+            session = self._remote_sessions.require_session(session_id)
+        except Exception:
+            return {
+                "session_id": session_id,
+                "operation_id": operation_id,
+                "request_id": request_id,
+                "status": "session_invalid",
+                "operation_state": "unknown",
+                "trace_id": deterministic_id(
+                    "tr",
+                    {
+                        "session_id": session_id,
+                        "operation_id": operation_id,
+                        "request_id": request_id,
+                        "cancel_session_invalid": True,
+                    },
+                ),
+                "continuation_token": None,
+            }
+        cancellation = self._long_running.cancel(
+            operation_id=operation_id,
+            request_id=request_id,
+            reason=reason,
+            requested_by=session.security_context,
+        )
+        cancellation["session_id"] = session_id
+        return cancellation
+
+    def _build_remote_tool_payload(
+        self,
+        *,
+        session: Any,
+        session_id: str,
+        request_id: str,
+        method: str,
+        params: dict[str, Any] | None,
+        client_operation_timeout_ms: int | None,
+    ) -> dict[str, Any]:
+        tool_arguments = dict(params or {})
+        for reserved_key in (
+            "call_id",
+            "client_capabilities",
+            "interface_profile_id",
+            "method",
+            "request_id",
+            "requested_transport",
+            "session_id",
+        ):
+            tool_arguments.pop(reserved_key, None)
+        session_security_context = dict(session.security_context)
+        tool_arguments["security_context"] = session_security_context
+        raw_context = tool_arguments.get("context", {})
+        context = dict(raw_context) if isinstance(raw_context, dict) else {}
+        context["security_context"] = dict(session_security_context)
+        tool_arguments["context"] = context
+
+        session_capabilities = dict(session.client_capabilities)
+        session_capabilities.update(
+            {
+                "interface_profile_id": session.interface_profile_id,
+                "requested_profile_version": session.negotiated_protocol_version,
+                "requested_transport": session.negotiated_transport,
+            }
+        )
+        if client_operation_timeout_ms is not None:
+            options = tool_arguments.get("options", {})
+            if not isinstance(options, dict):
+                options = {}
+            options.setdefault("timeout_ms", int(client_operation_timeout_ms))
+            tool_arguments["options"] = options
+        return {
+            "request_id": request_id,
+            "call_id": deterministic_id(
+                "call",
+                {"session_id": session_id, "request_id": request_id, "method": method},
+            ),
+            "tool_name": method,
+            "arguments": tool_arguments,
+            "client_capabilities": session_capabilities,
+            "security_context": session_security_context,
+        }
+
+    def invoke_tool(
+        self,
+        *,
+        payload: dict[str, Any],
+        interface_profile_id: str = "service_internal_v0",
+        provider_profile_id: str | None = None,
+    ) -> dict[str, Any]:
+        normalized = normalize_tool_invocation(
+            payload=payload,
+            interface_profile_id=interface_profile_id,
+            provider_profile_id=provider_profile_id,
+        )
+        return self._invoke_normalized_tool(normalized)
+
+    def invoke_provider_tool(
+        self,
+        *,
+        payload: dict[str, Any],
+        provider_profile_id: str,
+    ) -> dict[str, Any]:
+        request_id = str(payload.get("request_id", "")).strip() or deterministic_id(
+            "req",
+            {
+                "interface_profile_id": "provider_tool_calling_v0",
+                "provider_profile_id": provider_profile_id,
+                "payload": payload,
+            },
+        )
+        try:
+            descriptor = get_provider_profile_descriptor(provider_profile_id)
+        except KeyError:
+            error = map_exception_to_error(
+                ToolContractError(
+                    error_code="E_PROVIDER_CONTRACT_UNSUPPORTED",
+                    message=f"unknown provider profile: {provider_profile_id}",
+                    policy_rule_id="PROVIDER-PROFILE-001",
+                ),
+                trace_seed={
+                    "request_id": request_id,
+                    "provider_profile_id": provider_profile_id,
+                    "provider_profile_error": True,
+                },
+            )
+            return {
+                "request_id": request_id,
+                "interface_profile_id": "provider_tool_calling_v0",
+                "provider_profile_id": provider_profile_id,
+                "trace_id": error["trace_id"],
+                "status": "error",
+                "result": None,
+                "structured_output": None,
+                "error": error,
+                "notices": [],
+            }
+
+        if descriptor.state != "implemented":
+            error = map_exception_to_error(
+                ToolContractError(
+                    error_code="E_PROVIDER_CONTRACT_UNSUPPORTED",
+                    message=f"provider profile is not implemented: {provider_profile_id}",
+                    policy_rule_id="PROVIDER-PROFILE-002",
+                ),
+                trace_seed={
+                    "request_id": request_id,
+                    "provider_profile_id": provider_profile_id,
+                    "provider_profile_error": True,
+                },
+            )
+            return {
+                "request_id": request_id,
+                "interface_profile_id": "provider_tool_calling_v0",
+                "provider_profile_id": provider_profile_id,
+                "trace_id": error["trace_id"],
+                "status": "error",
+                "result": None,
+                "structured_output": None,
+                "error": error,
+                "notices": [],
+            }
+
+        envelope = self.invoke_tool(
+            payload=payload,
+            interface_profile_id="provider_tool_calling_v0",
+            provider_profile_id=provider_profile_id,
+        )
+        return {
+            "request_id": envelope["request_id"],
+            "interface_profile_id": envelope["interface_profile_id"],
+            "provider_profile_id": provider_profile_id,
+            "trace_id": envelope["trace_id"],
+            "status": envelope["status"],
+            "result": envelope["result"],
+            "structured_output": envelope["structured_output"],
+            "error": envelope["error"],
+            "notices": envelope["notices"],
         }
 
     def list_audit_bundles(self, *, limit: int = 100) -> list[dict[str, Any]]:
@@ -126,6 +575,12 @@ class ScratchBirdAIService:
 
         adapter = self.adapters[dialect]
         query_context = context or {}
+        _validate_compatibility_context(
+            self,
+            query_context,
+            default_profile_id="service_internal_v0",
+            default_transport="in_process",
+        )
         security_context = _extract_security_context(query_context)
         sec_hash = security_context_hash(security_context)
         compiled = adapter.compiler.compile_query(query_text, query_context)
@@ -293,11 +748,45 @@ class ScratchBirdAIService:
             approval_evidence=approval_evidence,
         )
 
-        compiled = self.compile_query(
-            dialect=dialect,
-            query_text=query_text,
-            context=query_context,
-        )
+        try:
+            compiled = self.compile_query(
+                dialect=dialect,
+                query_text=query_text,
+                context=query_context,
+            )
+        except ToolContractError as exc:
+            trace_id = deterministic_id(
+                "tr",
+                {
+                    "request_id": request_id,
+                    "error_code": exc.error_code,
+                    "rule": exc.policy_rule_id,
+                    "compatibility_denied": True,
+                },
+            )
+            bundle = create_audit_bundle(
+                trace_id=trace_id,
+                request_id=request_id,
+                tenant_id=security_context.get("tenant_id", "unknown"),
+                actor_id=security_context.get("actor_id", "unknown"),
+                dialect=dialect,
+                execution_mode="ai_analysis",
+                sql_text_normalized=" ".join(query_text.split()),
+                compile_artifact_id=deterministic_id("cmp", {"request_id": request_id, "blocked": True}),
+                execution_artifact_id=None,
+                plan_json={"operator_tree": {}, "rls_visibility": {"applied": False, "policy_ids": []}},
+                plan_hash=deterministic_id("plan", {"request_id": request_id, "blocked": True}).removeprefix("plan_"),
+                policy_decision="deny",
+                policy_rule_id=exc.policy_rule_id or "COMPATIBILITY-NEGOTIATION-001",
+                security_context=security_context,
+                approval_id=None,
+                approval_token=resolved_approval_token,
+                error_code=exc.error_code,
+                statement_kind="unknown",
+                sblr_hash="",
+            )
+            self._audit_store.append(bundle)
+            raise
         record = self._compile_store[compiled.compile_artifact_id]
         is_mutation = compiled.statement_kind != "read"
 
@@ -639,6 +1128,179 @@ class ScratchBirdAIService:
             security_context=security_context,
         )
 
+    def _invoke_normalized_tool(self, normalized: dict[str, Any]) -> dict[str, Any]:
+        tool_name = str(normalized["tool_name"])
+        arguments = dict(normalized.get("arguments", {}))
+        request_id = str(normalized["request_id"])
+        call_id = str(normalized["call_id"])
+        interface_profile_id = str(normalized["interface_profile_id"])
+        try:
+            result = self._dispatch_tool_call(
+                tool_name=tool_name,
+                request_id=request_id,
+                arguments=arguments,
+                normalized=normalized,
+            )
+            trace_id = _extract_trace_id(result) or deterministic_id(
+                "tr",
+                {"request_id": request_id, "call_id": call_id, "tool_name": tool_name},
+            )
+            return normalize_tool_response(
+                tool_name=tool_name,
+                request_id=request_id,
+                call_id=call_id,
+                interface_profile_id=interface_profile_id,
+                trace_id=trace_id,
+                result=result,
+            )
+        except Exception as exc:
+            trace_id = deterministic_id(
+                "tr",
+                {"request_id": request_id, "call_id": call_id, "tool_name": tool_name, "error": True},
+            )
+            return normalize_tool_response(
+                tool_name=tool_name,
+                request_id=request_id,
+                call_id=call_id,
+                interface_profile_id=interface_profile_id,
+                trace_id=trace_id,
+                error=exc,
+            )
+
+    def _dispatch_tool_call(
+        self,
+        *,
+        tool_name: str,
+        request_id: str,
+        arguments: dict[str, Any],
+        normalized: dict[str, Any],
+    ) -> Any:
+        if tool_name == "get_capabilities":
+            return self.get_capabilities()
+        if tool_name == "get_tool_descriptors":
+            return self.get_tool_descriptors()
+        if tool_name == "get_provider_profiles":
+            return self.get_provider_profiles()
+        if tool_name == "get_compatibility_manifest":
+            return self.get_compatibility_manifest()
+        if tool_name == "negotiate_compatibility":
+            return self.negotiate_compatibility(arguments.get("request"))
+        if tool_name == "list_dialects":
+            return {"dialects": self.list_dialects()}
+        if tool_name == "list_schemas":
+            return {
+                "schemas": self.list_schemas(
+                    dialect=str(arguments["dialect"]),
+                    database=(str(arguments.get("database", "")).strip() or None),
+                )
+            }
+        if tool_name == "list_tables":
+            return {
+                "tables": self.list_tables(
+                    dialect=str(arguments["dialect"]),
+                    schema=str(arguments["schema"]),
+                )
+            }
+        if tool_name == "describe_table":
+            return self.describe_table(
+                dialect=str(arguments["dialect"]),
+                schema=str(arguments["schema"]),
+                table=str(arguments["table"]),
+            )
+        if tool_name == "compile_query":
+            return self.compile_query(
+                dialect=str(arguments["dialect"]),
+                query_text=str(arguments["query_text"]),
+                context=arguments.get("context", {}),
+            ).to_dict()
+        if tool_name == "execute_compiled":
+            return self.execute_compiled(
+                compile_artifact_id=str(arguments["compile_artifact_id"]),
+                options=arguments.get("options"),
+                mode=str(arguments.get("mode", normalized.get("mode", "ai_analysis"))),
+                approval_token=str(arguments.get("approval_token", "")).strip() or None,
+            ).to_dict()
+        if tool_name == "execute_readonly_query":
+            return self.execute_readonly_query(
+                request_id=request_id,
+                dialect=str(arguments["dialect"]),
+                query_text=str(arguments["query_text"]),
+                security_context=dict(arguments["security_context"]),
+                options=arguments.get("options"),
+                context=arguments.get("context"),
+            )
+        if tool_name == "execute_mutation":
+            approval_evidence = normalized.get("approval_evidence") or arguments.get("approval_evidence")
+            return self.execute_mutation(
+                request_id=request_id,
+                dialect=str(arguments["dialect"]),
+                query_text=str(arguments["query_text"]),
+                security_context=dict(arguments["security_context"]),
+                approval_evidence=dict(approval_evidence or {}),
+                options=arguments.get("options"),
+                context=arguments.get("context"),
+            )
+        if tool_name == "run_query":
+            return self.run_query(
+                request_id=request_id,
+                dialect=str(arguments["dialect"]),
+                query_text=str(arguments["query_text"]),
+                mode=str(arguments.get("mode", normalized.get("mode", "ai_analysis"))),
+                options=arguments.get("options"),
+                context=arguments.get("context"),
+                approval_token=str(arguments.get("approval_token", "")).strip() or None,
+            ).to_dict()
+        if tool_name == "run_mutation":
+            security_context = normalized.get("security_context", {})
+            approval_evidence = normalized.get("approval_evidence") or {
+                "approval_token": str(arguments.get("approval_token", "")).strip()
+            }
+            return self.execute_mutation(
+                request_id=request_id,
+                dialect=str(arguments["dialect"]),
+                query_text=str(arguments["query_text"]),
+                security_context=dict(security_context),
+                approval_evidence=dict(approval_evidence),
+                options=arguments.get("options"),
+                context=arguments.get("context"),
+            )
+        if tool_name == "explain_query":
+            return self.explain_query(
+                dialect=str(arguments["dialect"]),
+                query_text=str(arguments["query_text"]),
+                context=arguments.get("context") or (
+                    {"security_context": arguments["security_context"]}
+                    if "security_context" in arguments
+                    else {}
+                ),
+            )
+        if tool_name == "vector_search":
+            return self.vector_search(
+                index_id=str(arguments["index_id"]),
+                query_embedding=list(arguments["query_embedding"]),
+                top_k=int(arguments["top_k"]),
+                security_context=dict(arguments["security_context"]),
+                filters=arguments.get("filters"),
+                include_vectors=bool(arguments.get("include_vectors", False)),
+            )
+        if tool_name == "hybrid_search":
+            return self.hybrid_search(
+                dialect=str(arguments["dialect"]),
+                query_text=str(arguments["query_text"]),
+                query_embedding=list(arguments["query_embedding"]),
+                vector_index_id=str(arguments["vector_index_id"]),
+                top_k=int(arguments["top_k"]),
+                security_context=dict(arguments["security_context"]),
+                sql_filter=arguments.get("sql_filter"),
+                weights=arguments.get("weights"),
+                options=arguments.get("options"),
+            )
+        raise ToolContractError(
+            error_code="E_TOOL_NOT_FOUND",
+            message=f"unknown tool: {tool_name}",
+            policy_rule_id="TOOL-DISPATCH-001",
+        )
+
     def _build_plan_info(
         self,
         *,
@@ -662,6 +1324,23 @@ class ScratchBirdAIService:
             planner_version="v1",
             rls_applied=True,
         )
+
+    def _remote_capabilities(self) -> dict[str, Any]:
+        capabilities = self.get_capabilities()
+        capabilities["interface_profiles"] = [
+            profile
+            for profile in capabilities["interface_profiles"]
+            if profile.get("profile_id") == "mcp_remote_v0"
+        ]
+        capabilities["session_required"] = True
+        capabilities["supports"]["streaming"] = True
+        capabilities["supports"]["continuation_tokens"] = True
+        capabilities["supports"]["cancellation"] = True
+        capabilities["supports"]["remote_transports"] = [
+            "https_json_request_response",
+            "https_sse_server_stream",
+        ]
+        return capabilities
 
 
 def _build_adapters(
@@ -695,11 +1374,19 @@ def build_default_service(settings: RuntimeSettings | None = None) -> ScratchBir
     router = DialectRouter(matrix=matrix)
     policy_engine = PolicyEngine()
     adapters, mode = _build_adapters(router=router, settings=runtime_settings)
+    remote_session_manager = RemoteSessionManager(
+        auth_token=runtime_settings.remote_mcp_auth_token,
+        session_ttl_sec=runtime_settings.remote_mcp_session_ttl_sec,
+        heartbeat_interval_sec=runtime_settings.remote_mcp_heartbeat_interval_sec,
+        supported_protocol_versions=runtime_settings.remote_mcp_protocol_versions,
+        supported_transports=runtime_settings.remote_mcp_supported_transports,
+    )
     return ScratchBirdAIService(
         router=router,
         policy_engine=policy_engine,
         adapters=adapters,
         adapter_mode=mode,
+        remote_session_manager=remote_session_manager,
     )
 
 
@@ -715,6 +1402,17 @@ def _resolve_approval_token(
         candidate = str(approval_evidence.get("approval_token", "")).strip()
         return candidate or None
     return None
+
+
+def _extract_trace_id(payload: Any) -> str | None:
+    if isinstance(payload, dict):
+        candidate = payload.get("trace_id")
+    else:
+        candidate = getattr(payload, "trace_id", None)
+    if candidate is None:
+        return None
+    normalized = str(candidate).strip()
+    return normalized or None
 
 
 def _resolve_approval_id(
@@ -781,3 +1479,62 @@ def _extract_security_context(context: dict[str, Any]) -> dict[str, Any]:
         "session_id": session_id,
         "context_version": max(1, context_version),
     }
+
+
+def _validate_compatibility_context(
+    service: ScratchBirdAIService,
+    context: dict[str, Any],
+    *,
+    default_profile_id: str,
+    default_transport: str,
+) -> None:
+    request = _extract_compatibility_request(
+        context,
+        default_profile_id=default_profile_id,
+        default_transport=default_transport,
+    )
+    if request is None:
+        return
+    response = service.negotiate_compatibility(request)
+    error = response.get("error")
+    if isinstance(error, dict):
+        raise ToolContractError(
+            error_code=str(error.get("error_code", "E_COMPATIBILITY_MISMATCH")),
+            message=str(error.get("message", "compatibility negotiation failed")),
+            policy_rule_id=str(error.get("reason_code", "COMPATIBILITY-NEGOTIATION-001")),
+            trace_id=str(error.get("trace_id", "")) or None,
+        )
+
+
+def _extract_compatibility_request(
+    context: dict[str, Any],
+    *,
+    default_profile_id: str,
+    default_transport: str,
+) -> dict[str, Any] | None:
+    if not isinstance(context, dict):
+        return None
+
+    raw = context.get("client_capabilities")
+    if raw is None:
+        raw = context.get("compatibility_request")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ToolContractError(
+            error_code="E_COMPATIBILITY_MISMATCH",
+            message="client_capabilities must be an object when provided",
+            policy_rule_id="COMPATIBILITY-REQUEST-001",
+        )
+
+    request = dict(raw)
+    request["interface_profile_id"] = (
+        str(request.get("interface_profile_id", "")).strip() or default_profile_id
+    )
+    request["requested_profile_version"] = (
+        str(request.get("requested_profile_version", "")).strip() or "v0"
+    )
+    request["requested_transport"] = (
+        str(request.get("requested_transport", "")).strip() or default_transport
+    )
+    return request

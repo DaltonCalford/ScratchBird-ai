@@ -7,6 +7,10 @@ Last Updated: 2026-03-07
 
 This backlog tracks the implemented early-beta surface and the remaining work required to harden it.
 
+For broader post-early-beta AI interface expansion work, see:
+
+- `docs/planning/AI_INTERFACE_IMPLEMENTATION_BACKLOG.md`
+
 Reference drafts:
 
 - `docs/specifications/drafts/AI_PLATFORM_ARCHITECTURE_SPEC.md`
@@ -76,3 +80,5 @@ Goal: controlled write workflows and production readiness controls.
 3. P2-001 and P2-002 durable approval evidence
 4. P2-003 quotas/rate limits and P2-004 resilience policy
 5. P2-005 parser/compiler compatibility enforcement
+
+Post-early-beta interface expansion sequencing is tracked separately in `docs/planning/AI_INTERFACE_IMPLEMENTATION_BACKLOG.md`.

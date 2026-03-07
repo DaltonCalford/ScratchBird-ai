@@ -2,14 +2,14 @@
   "check_count": 4,
   "commands": {
     "capability_matrix_validator": "OK: capability matrix is valid (docs/specifications/drafts/capability-matrix/capability-matrix.v0.json)",
-    "http_contract_selftest": "[smoke] base_url=http://127.0.0.1:39563 dialect=native\n[smoke] healthz OK\n[smoke] compile OK\n[smoke] execute OK\n[smoke] schemas OK (using schema=public)\n[smoke] tables OK (using table=customers)\n[smoke] describe OK\n[smoke] PASS"
+    "http_contract_selftest": "[smoke] base_url=http://127.0.0.1:44071 dialect=native\n[smoke] healthz OK\n[smoke] compile OK\n[smoke] execute OK\n[smoke] schemas OK (using schema=public)\n[smoke] tables OK (using table=customers)\n[smoke] describe OK\n[smoke] PASS"
   },
-  "duration_sec": 3.660675,
+  "duration_sec": 3.158301,
   "failed_checks": [],
-  "generated_at_utc": "2026-03-07T01:15:09Z",
-  "git_commit": "e7f707ddcd44ded513f065486f9bf871589649e1",
+  "generated_at_utc": "2026-03-07T12:19:41Z",
+  "git_commit": "446861d753c929d74c285331439a0a68f3951a96",
   "passed_checks": 4,
   "status": "PASS",
   "suite": "baseline_readiness",
-  "tests_run": 74
+  "tests_run": 115
 }

@@ -17,3 +17,5 @@ This directory is the documentation root for `ScratchBird-ai`.
 - `releases/EARLY_BETA_CONFORMANCE_GATES.md`
 - `status/EARLY_BETA_STATUS_2026-03-07.md`
 - `planning/PHASED_IMPLEMENTATION_BACKLOG.md`
+- `planning/AI_INTERFACE_SPEC_EXPANSION_BACKLOG.md`
+- `planning/AI_INTERFACE_IMPLEMENTATION_BACKLOG.md`

@@ -311,6 +311,11 @@ def generate(repo_root: Path) -> int:
 
     from scratchbird_ai.audit_bundle import REPLAY_OUTCOMES, create_audit_bundle, replay_validate_bundle
     from scratchbird_ai.execution_mode import ApprovalEvidence, evaluate_execution_mode, validate_transition
+    from scratchbird_ai.framework_adapters import (
+        LangChainAdapter,
+        LlamaIndexAdapter,
+        SemanticKernelAdapter,
+    )
     from scratchbird_ai.plan_introspection import build_plan_response, compute_plan_hash
     from scratchbird_ai.service import build_default_service
     from scratchbird_ai.cluster_routing import (
@@ -322,6 +327,30 @@ def generate(repo_root: Path) -> int:
     )
 
     generated_files: list[Path] = []
+
+    def seed_framework_service(service: Any) -> None:
+        service.add_embeddings(
+            index_id="idx_framework_docs",
+            dimension=3,
+            records=[
+                {
+                    "vector_id": "doc-1#1",
+                    "embedding": [0.1, 0.2, 0.3],
+                    "metadata": {"document_id": "doc-1", "text": "north overdue invoice"},
+                },
+                {
+                    "vector_id": "doc-2#1",
+                    "embedding": [0.3, 0.1, 0.0],
+                    "metadata": {"document_id": "doc-2", "text": "south paid invoice"},
+                },
+                {
+                    "vector_id": "doc-3#1",
+                    "embedding": [0.2, 0.2, 0.2],
+                    "metadata": {"document_id": "doc-3", "text": "north invoice aging"},
+                },
+            ],
+            security_context=security_context(),
+        )
 
     def save(rel_path: str, payload: dict[str, Any]) -> None:
         path = artifacts_root / rel_path
@@ -899,6 +928,338 @@ def generate(repo_root: Path) -> int:
                 "routes": [
                     {"shard_id": item.shard_id, "node_id": item.node_id, "route_reason": item.route_reason}
                     for item in route.routes
+                ],
+            },
+        ),
+    )
+
+    framework_suite = run_suite(repo_root, ["test_framework_adapters.py"])
+    save_junit("12/test_report.junit.xml", "framework_adapter_parity", framework_suite)
+    ctx = security_context()
+
+    canonical_langchain_service = build_default_service()
+    langchain_service = build_default_service()
+    langchain_adapter = LangChainAdapter(langchain_service)
+    canonical_langchain_query = canonical_langchain_service.execute_readonly_query(
+        request_id="req_framework_langchain_query",
+        dialect="native",
+        query_text="SELECT 1",
+        security_context=ctx,
+        options={"max_rows": 1},
+    )
+    langchain_query = langchain_adapter.run_query(
+        dialect="native",
+        query_text="SELECT 1",
+        security_context=ctx,
+        options={"max_rows": 1},
+        request_id="req_framework_langchain_query",
+    )
+
+    canonical_llama_service = build_default_service()
+    llama_service = build_default_service()
+    seed_framework_service(canonical_llama_service)
+    seed_framework_service(llama_service)
+    llama_adapter = LlamaIndexAdapter(llama_service)
+    canonical_llama_explain = canonical_llama_service.explain_query(
+        dialect="native",
+        query_text="SELECT 1",
+        context={"security_context": ctx},
+    )
+    llama_explain = llama_adapter.explain(
+        dialect="native",
+        query_text="SELECT 1",
+        security_context=ctx,
+    )
+    canonical_llama_vector = canonical_llama_service.vector_search(
+        index_id="idx_framework_docs",
+        query_embedding=[0.1, 0.2, 0.3],
+        top_k=5,
+        security_context=ctx,
+    )
+    llama_vector = llama_adapter.vector_retrieve(
+        index_id="idx_framework_docs",
+        query_embedding=[0.1, 0.2, 0.3],
+        top_k=5,
+        security_context=ctx,
+    )
+    canonical_llama_hybrid = canonical_llama_service.hybrid_search(
+        dialect="native",
+        query_text="north overdue invoice",
+        query_embedding=[0.1, 0.2, 0.3],
+        vector_index_id="idx_framework_docs",
+        top_k=5,
+        security_context=ctx,
+        sql_filter={"metadata": {"document_id": "doc-1"}},
+    )
+    llama_hybrid = llama_adapter.hybrid_retrieve(
+        dialect="native",
+        query_text="north overdue invoice",
+        query_embedding=[0.1, 0.2, 0.3],
+        vector_index_id="idx_framework_docs",
+        top_k=5,
+        security_context=ctx,
+        sql_filter={"metadata": {"document_id": "doc-1"}},
+    )
+
+    canonical_semantic_service = build_default_service()
+    semantic_service = build_default_service()
+    semantic_adapter = SemanticKernelAdapter(semantic_service)
+    canonical_semantic_query = canonical_semantic_service.execute_readonly_query(
+        request_id="req_framework_semantic_query",
+        dialect="native",
+        query_text="SELECT 1",
+        security_context=ctx,
+        options={"max_rows": 1},
+    )
+    semantic_query = semantic_adapter.invoke_function(
+        function_name="execute_readonly_query",
+        arguments={
+            "dialect": "native",
+            "query_text": "SELECT 1",
+            "options": {"max_rows": 1},
+        },
+        security_context=ctx,
+        request_id="req_framework_semantic_query",
+    )
+    framework_checks = [
+        check_payload("framework_adapter_suite", framework_suite.passed, f"tests_run={framework_suite.tests_run}"),
+        check_payload(
+            "langchain_query_parity",
+            langchain_query["status"] == "success" and langchain_query["result"] == canonical_langchain_query,
+            json.dumps(
+                {
+                    "adapter": langchain_query,
+                    "canonical": canonical_langchain_query,
+                },
+                sort_keys=True,
+            ),
+        ),
+        check_payload(
+            "llamaindex_explain_parity",
+            llama_explain["status"] == "success" and llama_explain["result"] == canonical_llama_explain,
+            json.dumps(
+                {
+                    "adapter": llama_explain,
+                    "canonical": canonical_llama_explain,
+                },
+                sort_keys=True,
+            ),
+        ),
+        check_payload(
+            "llamaindex_vector_parity",
+            llama_vector["status"] == "success" and llama_vector["result"] == canonical_llama_vector,
+            json.dumps(
+                {
+                    "adapter": llama_vector,
+                    "canonical": canonical_llama_vector,
+                },
+                sort_keys=True,
+            ),
+        ),
+        check_payload(
+            "llamaindex_hybrid_parity",
+            llama_hybrid["status"] == "success" and llama_hybrid["result"] == canonical_llama_hybrid,
+            json.dumps(
+                {
+                    "adapter": llama_hybrid,
+                    "canonical": canonical_llama_hybrid,
+                },
+                sort_keys=True,
+            ),
+        ),
+        check_payload(
+            "semantic_kernel_query_parity",
+            semantic_query["status"] == "success" and semantic_query["result"] == canonical_semantic_query,
+            json.dumps(
+                {
+                    "adapter": semantic_query,
+                    "canonical": canonical_semantic_query,
+                },
+                sort_keys=True,
+            ),
+        ),
+    ]
+    save(
+        "12/framework_parity.json",
+        artifact_payload(
+            generated_at_utc=generated_at,
+            git_sha=git_sha,
+            checks=framework_checks,
+            extra={
+                "tests_run": framework_suite.tests_run,
+                "duration_sec": round(framework_suite.duration_sec, 6),
+                "profiles": ["langchain_v0", "llamaindex_v0", "semantic_kernel_v0"],
+            },
+        ),
+    )
+
+    provider_suite = run_suite(repo_root, ["test_provider_profiles.py"])
+    save_junit("13/test_report.junit.xml", "provider_profile_parity", provider_suite)
+    provider_catalog_service = build_default_service()
+    provider_catalog = provider_catalog_service.get_provider_profiles()
+
+    def canonical_provider_envelope(call_id: str, request_id: str) -> dict[str, Any]:
+        service = build_default_service()
+        return service.invoke_tool(
+            payload={
+                "request_id": request_id,
+                "call_id": call_id,
+                "tool_name": "execute_readonly_query",
+                "arguments": {
+                    "dialect": "native",
+                    "query_text": "SELECT 1",
+                    "security_context": {
+                        "tenant_id": "tenant_a",
+                        "actor_id": "actor_a",
+                    },
+                    "options": {"max_rows": 1},
+                },
+            },
+            interface_profile_id="service_internal_v0",
+        )
+
+    canonical_openai = canonical_provider_envelope("call_provider_openai", "req_provider_openai")
+    openai_provider = build_default_service().invoke_provider_tool(
+        provider_profile_id="openai_tool_calling_v0",
+        payload={
+            "request_id": "req_provider_openai",
+            "id": "call_provider_openai",
+            "function": {
+                "name": "execute_readonly_query",
+                "arguments": (
+                    '{"dialect":"native","query_text":"SELECT 1","security_context":'
+                    '{"tenant_id":"tenant_a","actor_id":"actor_a"},"options":{"max_rows":1}}'
+                ),
+            },
+        },
+    )
+    canonical_anthropic = canonical_provider_envelope(
+        "call_provider_anthropic",
+        "req_provider_anthropic",
+    )
+    anthropic_provider = build_default_service().invoke_provider_tool(
+        provider_profile_id="anthropic_tool_use_v0",
+        payload={
+            "request_id": "req_provider_anthropic",
+            "id": "call_provider_anthropic",
+            "name": "execute_readonly_query",
+            "input": {
+                "dialect": "native",
+                "query_text": "SELECT 1",
+                "security_context": {"tenant_id": "tenant_a", "actor_id": "actor_a"},
+                "options": {"max_rows": 1},
+            },
+        },
+    )
+    canonical_gemini = canonical_provider_envelope(
+        "call_provider_gemini",
+        "req_provider_gemini",
+    )
+    gemini_provider = build_default_service().invoke_provider_tool(
+        provider_profile_id="gemini_function_calling_v0",
+        payload={
+            "request_id": "req_provider_gemini",
+            "functionCall": {
+                "id": "call_provider_gemini",
+                "name": "execute_readonly_query",
+                "args": {
+                    "dialect": "native",
+                    "query_text": "SELECT 1",
+                    "security_context": {"tenant_id": "tenant_a", "actor_id": "actor_a"},
+                    "options": {"max_rows": 1},
+                },
+            },
+        },
+    )
+    unknown_provider = build_default_service().invoke_provider_tool(
+        provider_profile_id="unknown_profile_v0",
+        payload={
+            "request_id": "req_provider_unknown",
+            "id": "call_provider_unknown",
+            "name": "execute_readonly_query",
+            "input": {
+                "dialect": "native",
+                "query_text": "SELECT 1",
+                "security_context": {"tenant_id": "tenant_a", "actor_id": "actor_a"},
+            },
+        },
+    )
+    provider_checks = [
+        check_payload("provider_profile_suite", provider_suite.passed, f"tests_run={provider_suite.tests_run}"),
+        check_payload(
+            "provider_catalog_implemented",
+            {
+                item["profile_id"]: item["state"] for item in provider_catalog["profiles"]
+            }
+            == {
+                "openai_tool_calling_v0": "implemented",
+                "anthropic_tool_use_v0": "implemented",
+                "gemini_function_calling_v0": "implemented",
+            },
+            json.dumps(provider_catalog, sort_keys=True),
+        ),
+        check_payload(
+            "openai_provider_parity",
+            openai_provider["status"] == canonical_openai["status"]
+            and openai_provider["result"] == canonical_openai["result"]
+            and openai_provider["structured_output"] == canonical_openai["structured_output"]
+            and openai_provider["trace_id"] == canonical_openai["trace_id"],
+            json.dumps(
+                {
+                    "provider": openai_provider,
+                    "canonical": canonical_openai,
+                },
+                sort_keys=True,
+            ),
+        ),
+        check_payload(
+            "anthropic_provider_parity",
+            anthropic_provider["status"] == canonical_anthropic["status"]
+            and anthropic_provider["result"] == canonical_anthropic["result"]
+            and anthropic_provider["structured_output"] == canonical_anthropic["structured_output"]
+            and anthropic_provider["trace_id"] == canonical_anthropic["trace_id"],
+            json.dumps(
+                {
+                    "provider": anthropic_provider,
+                    "canonical": canonical_anthropic,
+                },
+                sort_keys=True,
+            ),
+        ),
+        check_payload(
+            "gemini_provider_parity",
+            gemini_provider["status"] == canonical_gemini["status"]
+            and gemini_provider["result"] == canonical_gemini["result"]
+            and gemini_provider["structured_output"] == canonical_gemini["structured_output"]
+            and gemini_provider["trace_id"] == canonical_gemini["trace_id"],
+            json.dumps(
+                {
+                    "provider": gemini_provider,
+                    "canonical": canonical_gemini,
+                },
+                sort_keys=True,
+            ),
+        ),
+        check_payload(
+            "unknown_provider_rejected",
+            unknown_provider["status"] == "error"
+            and unknown_provider["error"]["error_code"] == "E_PROVIDER_CONTRACT_UNSUPPORTED",
+            json.dumps(unknown_provider, sort_keys=True),
+        ),
+    ]
+    save(
+        "13/provider_parity.json",
+        artifact_payload(
+            generated_at_utc=generated_at,
+            git_sha=git_sha,
+            checks=provider_checks,
+            extra={
+                "tests_run": provider_suite.tests_run,
+                "duration_sec": round(provider_suite.duration_sec, 6),
+                "profiles": [
+                    "openai_tool_calling_v0",
+                    "anthropic_tool_use_v0",
+                    "gemini_function_calling_v0",
                 ],
             },
         ),

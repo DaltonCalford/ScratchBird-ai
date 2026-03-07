@@ -7,7 +7,7 @@ This directory contains normative implementation specifications for ScratchBird 
 - `templates/` - authoring templates
 - `drafts/` - in-progress specifications
 - `final/` - approved specifications
-- `ScratchBird_AI_Specifications/` - cross-cutting implementation spec suite for AI platform expansion
+- `ScratchBird_AI_Specifications/` - older cross-cutting expansion material, not the active release contract
 
 ## Authoring Flow
 
@@ -19,3 +19,4 @@ This directory contains normative implementation specifications for ScratchBird 
 ## Related Planning
 
 - `../planning/PHASED_IMPLEMENTATION_BACKLOG.md`
+- `../planning/AI_INTERFACE_SPEC_EXPANSION_BACKLOG.md`

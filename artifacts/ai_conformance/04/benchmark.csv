@@ -1,2 +1,2 @@
 scenario,iterations,mean_ms,p95_ms,top_hit
-vector_search_sample,25,0.013836,0.016868,doc-1#1
+vector_search_sample,25,0.013535,0.016207,doc-1#1

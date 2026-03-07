@@ -17,6 +17,8 @@ This tree contains release-gating proof artifacts for the active early-beta rele
 - `09/audit_replay_report.json`, `09/attestation_report.json`
 - `10/routing_report.json`, `10/failover_report.json`
 - `11/matrix_status.json`
+- `12/framework_parity.json`, `12/test_report.junit.xml`
+- `13/provider_parity.json`, `13/test_report.junit.xml`
 
 ## Regeneration
 

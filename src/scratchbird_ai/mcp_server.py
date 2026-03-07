@@ -44,6 +44,39 @@ def create_server(service: ScratchBirdAIService | None = None):
         )
 
     @mcp.tool()
+    def get_tool_descriptors() -> dict:
+        return _tool_call(
+            tool_name="get_tool_descriptors",
+            payload={},
+            fn=lambda: svc.get_tool_descriptors(),
+        )
+
+    @mcp.tool()
+    def get_provider_profiles() -> dict:
+        return _tool_call(
+            tool_name="get_provider_profiles",
+            payload={},
+            fn=lambda: svc.get_provider_profiles(),
+        )
+
+    @mcp.tool()
+    def get_compatibility_manifest() -> dict:
+        return _tool_call(
+            tool_name="get_compatibility_manifest",
+            payload={},
+            fn=lambda: svc.get_compatibility_manifest(),
+        )
+
+    @mcp.tool()
+    def negotiate_compatibility(request: dict | None = None) -> dict:
+        payload = {"request": request or {}}
+        return _tool_call(
+            tool_name="negotiate_compatibility",
+            payload=payload,
+            fn=lambda: svc.negotiate_compatibility(request or {}),
+        )
+
+    @mcp.tool()
     def list_dialects() -> Any:
         return _tool_call(
             tool_name="list_dialects",
